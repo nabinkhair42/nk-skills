@@ -1,0 +1,51 @@
+---
+type BreadcrumbItem = {
+  label: string;
+  href?: string;
+};
+
+type Props = {
+  items: BreadcrumbItem[];
+};
+
+const { items } = Astro.props as Props;
+
+const finalItems =
+  items.length > 3 && items[1]?.label === "skills"
+    ? [items[0], items[1], items[items.length - 1]]
+    : items;
+---
+
+<nav aria-label="Breadcrumb" class="px-4 sm:px-0">
+  <ol
+    class="flex flex-wrap items-center gap-1.5 text-sm font-medium text-muted-foreground"
+  >
+    {
+      finalItems.map((item, index) => {
+        const isLast = index === finalItems.length - 1;
+
+        return (
+          <>
+            <li>
+              {item.href && !isLast ? (
+                <a
+                  href={item.href}
+                  class="transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <span class={isLast ? "text-foreground" : undefined}>
+                  {item.label}
+                </span>
+              )}
+            </li>
+            {!isLast ? (
+              <li class="select-none text-muted-foreground/40">/</li>
+            ) : null}
+          </>
+        );
+      })
+    }
+  </ol>
+</nav>

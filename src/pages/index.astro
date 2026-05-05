@@ -1,0 +1,52 @@
+---
+import { skills } from "../data/skills";
+import Layout from "../layouts/Layout.astro";
+import { InstallTabs } from "../ui/install-tabs";
+import SkillCard from "../ui/skill-card.astro";
+---
+
+<Layout
+  title="skills by nabin khair"
+  description="reusable skills for product engineers. install with a single command."
+>
+  <div
+    class="relative flex min-h-dvh flex-col items-center px-0 pt-24 sm:px-4 sm:pt-32"
+  >
+    <div class="relative w-full max-w-3xl sm:px-0">
+      <div class="mx-auto flex w-full flex-col gap-14">
+        <div class="px-4 sm:px-0">
+          <h1
+            class="font-heading text-foreground text-3xl font-semibold tracking-tight sm:text-4xl"
+          >
+            skills
+          </h1>
+          <p
+            class="text-muted-foreground mt-3 max-w-md text-[15px] leading-relaxed"
+          >
+            reusable patterns i use as a product engineer, packaged as
+            installable agent skills.
+            <span class="text-foreground underline"> more coming soon. </span>
+          </p>
+        </div>
+
+        <div class="px-4 sm:px-0">
+          <InstallTabs client:load />
+        </div>
+
+        <div>
+          <div class="grid gap-4 px-4 sm:grid-cols-2 sm:px-0">
+            {
+              skills.map((skill) => (
+                <SkillCard
+                  href={`/skills/${skill.pathSlug}`}
+                  slug={skill.slug}
+                  description={skill.description}
+                />
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

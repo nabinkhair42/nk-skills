@@ -1,0 +1,386 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import CodeBlock from "../../ui/code-block.astro";
+import type { MarkdownInstance } from "astro";
+import { skills, type Skill } from "../../data/skills";
+import { topicBySlug, relatedTopicSlugs } from "../../data/topics";
+import type { TopicSlug } from "../../data/topics";
+import SkillContentCard from "../../ui/skill-content-card.astro";
+import Breadcrumbs from "../../ui/breadcrumbs.astro";
+import SkillCard from "../../ui/skill-card.astro";
+import SkillNav from "../../ui/skill-nav.astro";
+import TopicTag from "../../ui/topic-tag.astro";
+
+type SkillFrontmatter = {
+  name?: string;
+  description?: string;
+  label?: string;
+};
+
+const titleize = (value: string) =>
+  value
+    .split("-")
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
+
+const skillModules = import.meta.glob<MarkdownInstance<SkillFrontmatter>>(
+  "/skills/*/SKILL.md",
+  { eager: true },
+);
+const skillRawModules = import.meta.glob<string>("/skills/*/SKILL.md", {
+  eager: true,
+  query: "?raw",
+  import: "default",
+});
+const skillEntries = Object.entries(skillModules).map(([path, module]) => {
+  const entrySlug = path.split("/").at(-2) ?? "";
+  return { slug: entrySlug, module };
+});
+const skillRawEntries = Object.entries(skillRawModules).map(([path, raw]) => {
+  const entrySlug = path.split("/").at(-2) ?? "";
+  return { slug: entrySlug, raw };
+});
+
+export function getStaticPaths() {
+  const topicGroupPaths = Array.from(
+    new Set(skills.flatMap((skill) => skill.topics ?? [])),
+  );
+
+  return [
+    ...skills.map((skill) => ({
+      params: { slug: skill.pathSlug },
+    })),
+    ...topicGroupPaths.map((pathSlug) => ({
+      params: { slug: pathSlug },
+    })),
+  ];
+}
+
+const routeSlug = Astro.params.slug ?? "";
+const pathSlug = Array.isArray(routeSlug) ? routeSlug.join("/") : routeSlug;
+const skillList: Skill[] = skills;
+
+const topic = topicBySlug.get(pathSlug as TopicSlug);
+const isTopicGroup = Boolean(topic);
+
+const skill = skillList.find((entry: Skill) => entry.pathSlug === pathSlug);
+
+const topicChildren = isTopicGroup
+  ? skillList.filter((entry: Skill) =>
+      entry.topics?.includes(pathSlug as TopicSlug),
+    )
+  : [];
+
+const isGroupPage = !skill && topicChildren.length > 0;
+const groupTitle = isTopicGroup
+  ? `${topic?.label ?? titleize(pathSlug)} skills`
+  : "";
+
+const skillHref = (entry: Skill) => `/skills/${entry.pathSlug}`;
+const breadcrumbItems = [
+  { label: "home", href: "/" },
+  { label: "skills", href: "/skills" },
+  ...(skill
+    ? [{ label: skill.label }]
+    : isTopicGroup && topic
+      ? [{ label: topic.label }]
+      : [{ label: titleize(pathSlug) }]),
+];
+
+const sortedSkills = [...skillList].sort((a, b) =>
+  a.pathSlug.localeCompare(b.pathSlug),
+);
+const currentSkillIndex = skill
+  ? sortedSkills.findIndex((entry: Skill) => entry.pathSlug === skill.pathSlug)
+  : -1;
+const previousSkill =
+  skill && currentSkillIndex > 0
+    ? sortedSkills[currentSkillIndex - 1]
+    : undefined;
+const nextSkill =
+  skill && currentSkillIndex >= 0 && currentSkillIndex < sortedSkills.length - 1
+    ? sortedSkills[currentSkillIndex + 1]
+    : undefined;
+const previousSkillHref = previousSkill
+  ? `/skills/${previousSkill.pathSlug}`
+  : undefined;
+const nextSkillHref = nextSkill ? `/skills/${nextSkill.pathSlug}` : undefined;
+
+const topicUsageCountBySlug = new Map<TopicSlug, number>();
+for (const entry of skillList) {
+  for (const topicSlug of entry.topics ?? []) {
+    topicUsageCountBySlug.set(
+      topicSlug,
+      (topicUsageCountBySlug.get(topicSlug) ?? 0) + 1,
+    );
+  }
+}
+
+const relatedTopicsForTopicPage =
+  isTopicGroup && topic
+    ? (relatedTopicSlugs[topic.slug] ?? [])
+        .filter((slug) => (topicUsageCountBySlug.get(slug) ?? 0) > 0)
+        .map((slug) => topicBySlug.get(slug))
+        .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+        .slice(0, 5)
+    : [];
+
+const skillTopicSuggestions = skill
+  ? Array.from(
+      new Set([
+        ...(skill.topics ?? []),
+        ...(skill.topics ?? []).flatMap(
+          (slug) => relatedTopicSlugs[slug] ?? [],
+        ),
+      ]),
+    )
+      .filter((slug) => (topicUsageCountBySlug.get(slug as TopicSlug) ?? 0) > 0)
+      .map((slug) => topicBySlug.get(slug as TopicSlug))
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+      .slice(0, 8)
+  : [];
+
+const isInvalidSkillsRoute = !skill && !isGroupPage;
+if (isInvalidSkillsRoute) {
+  Astro.response.status = 404;
+}
+
+const siteOrigin = Astro.site ?? new URL("https://skills.nabinkhair.com.np");
+const canonicalSkillPath = skill ? skill.pathSlug : pathSlug;
+const pageUrl = new URL(`/skills/${canonicalSkillPath}`, siteOrigin).toString();
+const shorten = (value: string, max = 160) =>
+  value.length <= max ? value : `${value.slice(0, max - 1).trimEnd()}...`;
+
+const structuredData = skill
+  ? {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      headline: skill.label,
+      description:
+        skill.description ?? "install this skill with a single command.",
+      url: pageUrl,
+      mainEntityOfPage: pageUrl,
+      author: {
+        "@type": "Person",
+        name: "Nabin Khair",
+        url: "https://nabinkhair.com.np",
+      },
+      publisher: {
+        "@type": "Person",
+        name: "Nabin Khair",
+        url: new URL("/", siteOrigin).toString(),
+      },
+      about: ["Product Engineering", "Full-Stack Development", "Agent Skills"],
+      keywords: [skill.slug, "product engineering skills"],
+    }
+  : isGroupPage
+    ? {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: groupTitle,
+        description:
+          isTopicGroup && topic ? topic.description : `browse ${groupTitle}.`,
+        url: pageUrl,
+        hasPart: {
+          "@type": "ItemList",
+          itemListElement: topicChildren.map((entry: Skill, index: number) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            url: new URL(skillHref(entry), siteOrigin).toString(),
+            name: entry.label,
+          })),
+        },
+      }
+    : undefined;
+
+const breadcrumbStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: breadcrumbItems.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.label,
+    item: new URL(
+      item.href ?? `/skills/${canonicalSkillPath}`,
+      siteOrigin,
+    ).toString(),
+  })),
+};
+
+const pageTitle = skill
+  ? `${skill.label} | nabin khair skills`
+  : isGroupPage
+    ? `${groupTitle} | nabin khair skills`
+    : "skill not found | nabin khair skills";
+
+const pageDescription = skill
+  ? shorten(skill.description ?? "install this skill with a single command.")
+  : isGroupPage && topic
+    ? shorten(`${topic.description} browse ${topicChildren.length} skills.`)
+    : "the requested skill could not be found.";
+
+let skillRaw = "";
+let SkillContent: any = null;
+
+if (skill) {
+  const localSlug = skill.slug;
+  const skillModule = skillEntries.find(
+    (entry) => entry.slug === localSlug,
+  )?.module;
+  skillRaw =
+    skillRawEntries.find((entry) => entry.slug === localSlug)?.raw ?? "";
+  SkillContent = skillModule?.Content;
+}
+
+const commandSegments = skill
+  ? [
+      { text: "curl", className: "syntax-command" },
+      { text: " -fsSL", className: "syntax-flag" },
+      {
+        text: ` https://skills.nabinkhair.com.np/skills/${skill.slug}/llms.txt`,
+        className: "syntax-string",
+      },
+      { text: " -o", className: "syntax-flag" },
+      { text: ` ${skill.slug}.md`, className: "syntax-string" },
+    ]
+  : [];
+---
+
+<Layout
+  llmsPath={skill ? `/skills/${canonicalSkillPath}/llms.txt` : undefined}
+  structuredData={structuredData
+    ? [structuredData, breadcrumbStructuredData]
+    : breadcrumbStructuredData}
+  title={pageTitle}
+  description={pageDescription}
+  robots={isInvalidSkillsRoute ? "noindex,follow" : undefined}
+>
+  <div
+    class="relative flex min-h-dvh flex-col items-center justify-start px-0 sm:px-4"
+  >
+    <div class="relative mt-20 w-full max-w-3xl sm:px-0">
+      <div class="mx-auto flex w-full flex-col gap-10">
+        <div>
+          <Breadcrumbs items={breadcrumbItems} />
+        </div>
+
+        {
+          isGroupPage ? (
+            <>
+              <div class="px-4 sm:px-0">
+                <h1 class="font-heading text-foreground text-3xl font-medium tracking-tight">
+                  {groupTitle}
+                </h1>
+                {isTopicGroup && topic?.description ? (
+                  <p class="text-muted-foreground mt-3 text-[15px]">
+                    {topic.description}
+                  </p>
+                ) : null}
+              </div>
+
+              <div class="grid gap-4 px-4 sm:grid-cols-2 sm:px-0">
+                {topicChildren.map((entry) => (
+                  <SkillCard
+                    href={skillHref(entry)}
+                    slug={entry.slug}
+                    description={entry.description}
+                  />
+                ))}
+              </div>
+
+              {relatedTopicsForTopicPage.length > 0 ? (
+                <div class="px-4 sm:px-0">
+                  <h2 class="font-heading text-foreground mb-3 text-lg font-medium tracking-tight">
+                    related topics
+                  </h2>
+                  <div class="flex flex-wrap gap-2">
+                    {relatedTopicsForTopicPage.map((entry) => (
+                      <TopicTag
+                        href={`/skills/${entry.slug}`}
+                        label={entry.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : null
+        }
+
+        {
+          skill ? (
+            <>
+              <div class="px-4 sm:px-0">
+                <div class="mt-3 flex items-start justify-between gap-3">
+                  <h1 class="font-heading text-foreground text-3xl font-medium tracking-tight">
+                    {skill.label}
+                  </h1>
+                  <SkillNav
+                    previousHref={previousSkillHref}
+                    nextHref={nextSkillHref}
+                  />
+                </div>
+                <p class="text-muted-foreground mt-3 text-lg">
+                  {skill.description ??
+                    "install this skill with a single command."}
+                </p>
+              </div>
+
+              <div>
+                <h2 class="font-heading text-foreground mb-3 px-4 text-lg font-medium tracking-tight sm:px-0">
+                  install
+                </h2>
+                <CodeBlock lines={[commandSegments]} align="center" truncate />
+              </div>
+
+              <SkillContentCard
+                copyContent={skillRaw}
+                name={skill.name}
+                description={skill.description}
+              >
+                {SkillContent ? <SkillContent /> : null}
+              </SkillContentCard>
+
+              {skillTopicSuggestions.length > 0 ? (
+                <div class="px-4 sm:px-0">
+                  <h2 class="font-heading text-foreground mb-3 text-lg font-medium tracking-tight">
+                    explore topics
+                  </h2>
+                  <div class="flex flex-wrap gap-2">
+                    {skillTopicSuggestions.map((entry) => (
+                      <TopicTag
+                        href={`/skills/${entry.slug}`}
+                        label={entry.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : null
+        }
+
+        {
+          isInvalidSkillsRoute ? (
+            <div class="px-4 sm:px-0">
+              <h1 class="font-heading text-foreground text-3xl font-medium tracking-tight">
+                skill not found
+              </h1>
+              <p class="text-muted-foreground mt-3 text-[15px]">
+                the route you requested does not match any skill or topic page.
+              </p>
+              <div class="mt-5">
+                <a
+                  href="/skills"
+                  class="text-muted-foreground hover:text-foreground text-sm font-medium underline underline-offset-4"
+                >
+                  browse all skills
+                </a>
+              </div>
+            </div>
+          ) : null
+        }
+      </div>
+    </div>
+  </div>
+</Layout>
