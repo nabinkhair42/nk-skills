@@ -35,10 +35,8 @@ const pageDescription =
 const robotsContent =
   robots ??
   "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1";
-const ogImageUrl =
-  ogImage ?? "https://skills.nabinkhair.com.np/og.png";
-const ogImageAltText =
-  ogImageAlt ?? "skills by nabin khair";
+const ogImageUrl = ogImage ?? "https://skills.nabinkhair.com.np/og.png";
+const ogImageAltText = ogImageAlt ?? "skills by nabin khair";
 const ogTypeValue = ogType ?? "website";
 ---
 
@@ -84,17 +82,20 @@ const ogTypeValue = ogType ?? "website";
   <body>
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground"
+      class="focus:bg-background focus:text-foreground sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:px-3 focus:py-2 focus:text-sm focus:font-medium"
     >
       skip to main content
     </a>
     <div class="relative min-h-dvh">
       <header class="flex items-center justify-between px-6 pt-6 sm:px-8">
-        <a href="/" class="font-heading text-sm font-medium text-foreground">
-          nabin khair
+        <a href="/" class="font-heading text-foreground text-sm font-medium">
+          skills.nk
         </a>
         <nav class="flex items-center gap-6 text-sm">
-          <a href="/skills" class="text-muted-foreground transition-colors hover:text-foreground">
+          <a
+            href="/skills"
+            class="text-muted-foreground hover:text-foreground transition-colors"
+          >
             skills
           </a>
           <ThemeToggle client:load />
@@ -102,7 +103,7 @@ const ogTypeValue = ogType ?? "website";
             href="https://github.com/nabinkhair42"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-muted-foreground transition-colors hover:text-foreground"
+            class="text-muted-foreground hover:text-foreground transition-colors"
           >
             <svg
               aria-label="GitHub"
@@ -122,7 +123,7 @@ const ogTypeValue = ogType ?? "website";
         <slot />
       </main>
       <footer
-        class="flex w-full items-center justify-center gap-3 px-4 pt-24 pb-6 text-center text-sm text-muted-foreground"
+        class="text-muted-foreground flex w-full items-center justify-center gap-3 px-4 pt-24 pb-6 text-center text-sm"
       >
         <span>
           <span>&copy;{currentYear}</span>

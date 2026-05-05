@@ -20,6 +20,7 @@ export type Skill = {
 const localSkillTopics: Record<string, TopicSlug[]> = {
   "structural-grid": ["design-systems", "architecture"],
   "optimistic-cache-pattern": ["react-patterns", "performance"],
+  "product-stack": ["architecture", "react-patterns", "tooling"],
 };
 
 const skillModules = import.meta.glob<MarkdownInstance<SkillFrontmatter>>(

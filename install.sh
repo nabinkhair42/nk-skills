@@ -60,7 +60,7 @@ print_error() {
 # Configuration``
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEFAULT_SKILL="structural-grid"
-ALL_SKILLS="structural-grid optimistic-cache-pattern"
+ALL_SKILLS="structural-grid optimistic-cache-pattern product-stack"
 UI_SKILLS_BASE_URL="${UI_SKILLS_BASE_URL:-https://skills.nabinkhair.com.np}"
 SKILL_URL_BASE="${UI_SKILLS_BASE_URL%/}/skills"
 REGISTRY_URL="${UI_SKILLS_REGISTRY_URL:-${SKILL_URL_BASE}/registry.txt}"
@@ -430,5 +430,5 @@ if [ "$OPTIONAL_INSTALLED" -eq 0 ]; then
 fi
 
 print_header "Done"
-print_info "Usage: /nk-skills path/to/file.tsx"
+print_info "Usage: /structural-grid, /optimistic-cache-pattern, or /product-stack"
 printf "\n"
