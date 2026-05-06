@@ -8,8 +8,9 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo,
-    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono:
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 :root {
@@ -156,14 +157,21 @@
   border-radius: 0.25rem;
 }
 
-.prose :where(pre code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+.prose
+  :where(pre code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
   background-color: transparent;
   padding: 0;
   font-weight: inherit;
 }
 
-.prose :where(code):not( :where([class~="not-prose"], [class~="not-prose"] *))::before,
-.prose :where(code):not( :where([class~="not-prose"], [class~="not-prose"] *))::after {
+.prose
+  :where(code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  )::before,
+.prose
+  :where(code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  )::after {
   content: "";
 }
 
@@ -182,31 +190,55 @@
   overscroll-behavior-x: contain;
 }
 
-.prose :where(pre.astro-code):not( :where([class~="not-prose"], [class~="not-prose"] *)) {
+.prose
+  :where(pre.astro-code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
   border: 1px solid var(--border);
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   overflow-y: hidden;
 }
 
-.dark .prose :where(pre.astro-code):not( :where([class~="not-prose"], [class~="not-prose"] *)) {
+.dark
+  .prose
+  :where(pre.astro-code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
   background-color: var(--shiki-dark-bg, #24292e) !important;
 }
 
-.dark .prose :where(pre.astro-code span):not( :where([class~="not-prose"], [class~="not-prose"] *)) {
+.dark
+  .prose
+  :where(pre.astro-code span):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
   color: var(--shiki-dark) !important;
 }
 
-.prose :where(pre.astro-code code):not( :where([class~="not-prose"], [class~="not-prose"] *)) {
+.prose
+  :where(pre.astro-code code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
   background: transparent;
 }
 
 /* Syntax highlight utility classes */
-.syntax-command { color: var(--syntax-command); }
-.syntax-flag { color: var(--syntax-flag); }
-.syntax-string { color: var(--syntax-string); }
-.syntax-keyword { color: var(--syntax-keyword); }
-.syntax-punctuation { color: var(--syntax-punctuation); }
+.syntax-command {
+  color: var(--syntax-command);
+}
+.syntax-flag {
+  color: var(--syntax-flag);
+}
+.syntax-string {
+  color: var(--syntax-string);
+}
+.syntax-keyword {
+  color: var(--syntax-keyword);
+}
+.syntax-punctuation {
+  color: var(--syntax-punctuation);
+}
 
 /* Scrollbar */
 * {

@@ -113,6 +113,7 @@ export const QUERY_KEYS = {
 ```
 
 **Rules:**
+
 - Group endpoints by resource with comments
 - Static paths for collections (`LIST`, `CREATE`)
 - Function paths for items (`GET`, `UPDATE`, `DELETE`) that take an `id` parameter
@@ -158,13 +159,14 @@ api.interceptors.response.use(
       window.location.href = "/sign-in";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
 ```
 
 **Rules:**
+
 - One axios instance, one file
 - Request interceptor adds auth token from localStorage
 - Response interceptor handles 401 redirect globally
@@ -202,6 +204,7 @@ export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 ```
 
 **Rules:**
+
 - Use `z.transform()` for data normalization (trim, lowercase, strip protocol)
 - Use `.pipe()` to chain validators after transforms
 - Use `.superRefine()` for cross-field validation
@@ -235,14 +238,14 @@ export const projectService = {
   getAll: async (page = 1, limit = 10) => {
     const response = await api.get<ApiResponse<PaginatedData<Project>>>(
       API_ENDPOINTS.PROJECTS.LIST,
-      { params: { page, limit } }
+      { params: { page, limit } },
     );
     return response.data;
   },
 
   getById: async (id: string) => {
     const response = await api.get<ApiResponse<Project>>(
-      API_ENDPOINTS.PROJECTS.GET(id)
+      API_ENDPOINTS.PROJECTS.GET(id),
     );
     return response.data;
   },
@@ -250,7 +253,7 @@ export const projectService = {
   create: async (data: CreateProjectInput) => {
     const response = await api.post<ApiResponse<Project>>(
       API_ENDPOINTS.PROJECTS.CREATE,
-      data
+      data,
     );
     return response.data;
   },
@@ -258,14 +261,14 @@ export const projectService = {
   update: async (id: string, data: UpdateProjectInput) => {
     const response = await api.put<ApiResponse<Project>>(
       API_ENDPOINTS.PROJECTS.UPDATE(id),
-      data
+      data,
     );
     return response.data;
   },
 
   delete: async (id: string) => {
     const response = await api.delete<ApiResponse<{ id: string }>>(
-      API_ENDPOINTS.PROJECTS.DELETE(id)
+      API_ENDPOINTS.PROJECTS.DELETE(id),
     );
     return response.data;
   },
@@ -273,6 +276,7 @@ export const projectService = {
 ```
 
 **Rules:**
+
 - Export a single object with all methods for the resource
 - Every method returns `response.data` (unwraps axios response wrapper)
 - Type the response with `ApiResponse<T>` generic
@@ -367,6 +371,7 @@ export function useDeleteProject() {
 ```
 
 **Rules:**
+
 - `useQuery` for reads, `useMutation` for writes
 - `queryKey` always from `QUERY_KEYS` factory
 - `enabled: !!id` to prevent fetching with empty IDs
@@ -404,7 +409,10 @@ export const GET = protectedApi(async (request: NextRequest, user) => {
   const { page, limit, offset } = getPaginationParams(searchParams);
 
   const [[{ value: total }], rows] = await Promise.all([
-    db.select({ value: count() }).from(projects).where(eq(projects.userId, user.id)),
+    db
+      .select({ value: count() })
+      .from(projects)
+      .where(eq(projects.userId, user.id)),
     db
       .select()
       .from(projects)
@@ -423,7 +431,9 @@ export const POST = protectedApi(async (request: NextRequest, user) => {
 
   const parsed = createProjectSchema.safeParse(body);
   if (!parsed.success) {
-    return Errors.badRequest(parsed.error.issues[0]?.message || "Invalid input");
+    return Errors.badRequest(
+      parsed.error.issues[0]?.message || "Invalid input",
+    );
   }
 
   const [project] = await db
@@ -457,7 +467,7 @@ export const GET = protectedApi(
     if (project.userId !== user.id) return Errors.forbidden();
 
     return successResponse(project);
-  }
+  },
 );
 
 // PUT /api/projects/[id]
@@ -468,7 +478,9 @@ export const PUT = protectedApi(
 
     const parsed = updateProjectSchema.safeParse(body);
     if (!parsed.success) {
-      return Errors.badRequest(parsed.error.issues[0]?.message || "Invalid input");
+      return Errors.badRequest(
+        parsed.error.issues[0]?.message || "Invalid input",
+      );
     }
 
     const [updated] = await db
@@ -478,7 +490,7 @@ export const PUT = protectedApi(
       .returning();
 
     return successResponse(updated, "Project updated");
-  }
+  },
 );
 
 // DELETE /api/projects/[id]
@@ -489,11 +501,12 @@ export const DELETE = protectedApi(
     await db.delete(projects).where(eq(projects.id, id));
 
     return successResponse({ id }, "Project deleted");
-  }
+  },
 );
 ```
 
 **Rules:**
+
 - Wrap handlers with `protectedApi` or `adminApi` middleware
 - Always validate body with `schema.safeParse()` before processing
 - Use `Errors.badRequest()`, `Errors.notFound()`, etc. for error responses
@@ -516,11 +529,11 @@ import { NextResponse } from "next/server";
 export function successResponse<T>(
   data: T,
   message?: string,
-  options: { status?: number; headers?: Record<string, string> } = {}
+  options: { status?: number; headers?: Record<string, string> } = {},
 ) {
   return NextResponse.json(
     { success: true, data, message },
-    { status: options.status || 200, headers: options.headers }
+    { status: options.status || 200, headers: options.headers },
   );
 }
 
@@ -529,14 +542,21 @@ export function paginatedResponse<T>(
   total: number,
   page: number,
   limit: number,
-  message?: string
+  message?: string,
 ) {
   const totalPages = Math.ceil(total / limit);
   return NextResponse.json({
     success: true,
     data: {
       items,
-      meta: { page, limit, total, totalPages, hasNext: page < totalPages, hasPrev: page > 1 },
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
     },
     message,
   });
@@ -557,7 +577,10 @@ export const Errors = {
 
 export function getPaginationParams(searchParams: URLSearchParams) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "10")));
+  const limit = Math.min(
+    100,
+    Math.max(1, parseInt(searchParams.get("limit") || "10")),
+  );
   const offset = (page - 1) * limit;
   return { page, limit, offset };
 }
@@ -598,14 +621,14 @@ export interface PaginatedData<T> {
 
 Not every mutation needs the Axios -> Service -> Hook flow. Use **Server Actions** for simple internal mutations. Use **API Route Handlers** when external clients need access.
 
-| Use case | Pattern |
-|----------|---------|
-| Form submission from your app | Server Action |
-| Simple create/update/delete from a dialog | Server Action |
+| Use case                                           | Pattern           |
+| -------------------------------------------------- | ----------------- |
+| Form submission from your app                      | Server Action     |
+| Simple create/update/delete from a dialog          | Server Action     |
 | External API consumed by mobile app or third party | API Route Handler |
-| Webhook endpoint | API Route Handler |
-| Cacheable GET endpoint | API Route Handler |
-| Complex multi-step mutation with streaming | API Route Handler |
+| Webhook endpoint                                   | API Route Handler |
+| Cacheable GET endpoint                             | API Route Handler |
+| Complex multi-step mutation with streaming         | API Route Handler |
 
 ```typescript
 // app/actions/project.ts
@@ -655,6 +678,7 @@ export default async function DashboardPage() {
 ```
 
 **Rules:**
+
 - Default to Server Components. Only add `"use client"` when you need interactivity (state, effects, event handlers)
 - Fetch data directly in Server Components using Drizzle, no need for API routes or services
 - Wrap slow data fetches in `<Suspense>` so fast parts render immediately
@@ -736,7 +760,19 @@ export const timestamps = {
 ```typescript
 // db/schema/projects.ts
 
-import { pgTable, pgEnum, text, uuid, integer, boolean, timestamp, jsonb, index, uniqueIndex, unique } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  pgEnum,
+  text,
+  uuid,
+  integer,
+  boolean,
+  timestamp,
+  jsonb,
+  index,
+  uniqueIndex,
+  unique,
+} from "drizzle-orm/pg-core";
 import { timestamps } from "./columns";
 import { users } from "./auth";
 
@@ -751,43 +787,47 @@ export const projectStatusEnum = pgEnum("project_status", [
 export type ProjectStatus = (typeof projectStatusEnum.enumValues)[number];
 
 // Table definition
-export const projects = pgTable("projects", {
-  // Primary key: uuid with auto-generation
-  id: uuid("id").primaryKey().defaultRandom(),
+export const projects = pgTable(
+  "projects",
+  {
+    // Primary key: uuid with auto-generation
+    id: uuid("id").primaryKey().defaultRandom(),
 
-  // Foreign key with cascade delete
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    // Foreign key with cascade delete
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
 
-  // Required text fields
-  name: text("name").notNull(),
-  description: text("description"),
+    // Required text fields
+    name: text("name").notNull(),
+    description: text("description"),
 
-  // Enum column with default
-  status: projectStatusEnum("status").notNull().default("draft"),
+    // Enum column with default
+    status: projectStatusEnum("status").notNull().default("draft"),
 
-  // Boolean with default
-  isPublic: boolean("is_public").notNull().default(false),
+    // Boolean with default
+    isPublic: boolean("is_public").notNull().default(false),
 
-  // Integer for counters
-  viewCount: integer("view_count").notNull().default(0),
+    // Integer for counters
+    viewCount: integer("view_count").notNull().default(0),
 
-  // Type-safe JSONB
-  settings: jsonb("settings").$type<{
-    theme: string;
-    notifications: boolean;
-  }>(),
-  tags: jsonb("tags").$type<string[]>().default([]),
+    // Type-safe JSONB
+    settings: jsonb("settings").$type<{
+      theme: string;
+      notifications: boolean;
+    }>(),
+    tags: jsonb("tags").$type<string[]>().default([]),
 
-  // Timestamps - spread the reusable columns
-  ...timestamps,
-}, (table) => [
-  // Indexes - third argument to pgTable
-  index("idx_projects_user").on(table.userId),
-  index("idx_projects_status").on(table.userId, table.status),
-  uniqueIndex("idx_projects_user_name").on(table.userId, table.name),
-]);
+    // Timestamps - spread the reusable columns
+    ...timestamps,
+  },
+  (table) => [
+    // Indexes - third argument to pgTable
+    index("idx_projects_user").on(table.userId),
+    index("idx_projects_status").on(table.userId, table.status),
+    uniqueIndex("idx_projects_user_name").on(table.userId, table.name),
+  ],
+);
 
 // Infer types for select and insert
 export type Project = typeof projects.$inferSelect;
@@ -806,20 +846,21 @@ export * from "./projects";
 
 ### Column Type Reference
 
-| Use case | Drizzle column | Example |
-|----------|---------------|---------|
-| String ID (auth, custom) | `text("id").primaryKey()` | User IDs, session tokens |
-| Auto UUID | `uuid("id").primaryKey().defaultRandom()` | Most domain tables |
-| Foreign key | `.references(() => table.id, { onDelete: "cascade" })` | Ownership |
-| Enum | `pgEnum("name", [...])` then use as column type | Status fields |
-| JSON with types | `jsonb("field").$type<T>()` | Settings, arrays, metadata |
-| Counter | `integer("field").notNull().default(0)` | View counts, metrics |
-| Flag | `boolean("field").notNull().default(false)` | Feature toggles |
-| Timestamp | `timestamp("field").notNull().defaultNow()` | createdAt, updatedAt |
-| Constrained text | `varchar("field", { length: 2 })` | Country codes, short codes |
-| Decimal | `numeric("field", { precision: 14, scale: 4 })` | Financial values |
+| Use case                 | Drizzle column                                         | Example                    |
+| ------------------------ | ------------------------------------------------------ | -------------------------- |
+| String ID (auth, custom) | `text("id").primaryKey()`                              | User IDs, session tokens   |
+| Auto UUID                | `uuid("id").primaryKey().defaultRandom()`              | Most domain tables         |
+| Foreign key              | `.references(() => table.id, { onDelete: "cascade" })` | Ownership                  |
+| Enum                     | `pgEnum("name", [...])` then use as column type        | Status fields              |
+| JSON with types          | `jsonb("field").$type<T>()`                            | Settings, arrays, metadata |
+| Counter                  | `integer("field").notNull().default(0)`                | View counts, metrics       |
+| Flag                     | `boolean("field").notNull().default(false)`            | Feature toggles            |
+| Timestamp                | `timestamp("field").notNull().defaultNow()`            | createdAt, updatedAt       |
+| Constrained text         | `varchar("field", { length: 2 })`                      | Country codes, short codes |
+| Decimal                  | `numeric("field", { precision: 14, scale: 4 })`        | Financial values           |
 
 **Rules:**
+
 - Every table gets `createdAt` and `updatedAt` via the shared `timestamps` spread
 - Foreign keys always specify `onDelete` behavior (`cascade` or `set null`)
 - **Index every foreign key column.** Drizzle does NOT auto-index FKs. Without explicit indexes, joins and lookups on FK columns scan the full table

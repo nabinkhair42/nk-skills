@@ -32,7 +32,7 @@ Add these to your global CSS. All measurements derive from a single `--rail-offs
 }
 .page-rails::before,
 .page-rails::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   bottom: 0;
@@ -41,8 +41,12 @@ Add these to your global CSS. All measurements derive from a single `--rail-offs
   pointer-events: none;
   z-index: 1;
 }
-.page-rails::before { left: var(--rail-offset); }
-.page-rails::after { right: var(--rail-offset); }
+.page-rails::before {
+  left: var(--rail-offset);
+}
+.page-rails::after {
+  right: var(--rail-offset);
+}
 
 /* Content bounded to rail edges */
 .rail-bounded {
@@ -57,7 +61,7 @@ Add these to your global CSS. All measurements derive from a single `--rail-offs
   z-index: 2;
 }
 .section-divider::before {
-  content: '';
+  content: "";
   position: absolute;
   left: var(--rail-offset, max(1rem, calc(50% - 36rem)));
   right: var(--rail-offset, max(1rem, calc(50% - 36rem)));
@@ -67,7 +71,10 @@ Add these to your global CSS. All measurements derive from a single `--rail-offs
 
 /* Subtle dot pattern for section backgrounds */
 .dot-pattern {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px
+  );
   background-size: 24px 24px;
 }
 
@@ -76,10 +83,20 @@ Add these to your global CSS. All measurements derive from a single `--rail-offs
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
 ```
 
 ### Critical: overflow-x
@@ -102,6 +119,7 @@ html {
 ### Adjusting rail width
 
 Change `36rem` to match your desired max content width:
+
 - `32rem` = 1024px = Tailwind `max-w-5xl`
 - `36rem` = 1152px = Tailwind `max-w-6xl` (recommended default)
 - `40rem` = 1280px = Tailwind `max-w-7xl`
@@ -206,6 +224,7 @@ Use `rail-bounded` to align the grid edges with the rails. Apply `border-t borde
 ```
 
 **Border logic rules:**
+
 - `border-l` (left) = applied to every cell that is NOT the first in its row at that breakpoint
 - `border-t` (top) = applied to every cell that is NOT in the first row at that breakpoint
 - Use `sm:max-lg:` prefix for tablet-only borders that differ from desktop
@@ -247,6 +266,7 @@ For layouts like text + interactive content, use `items-stretch` so the dashed d
 ```
 
 **Sticky text requirements:**
+
 - Parent `.page-rails` must use `overflow-x: clip` (not `hidden`)
 - The sticky element's direct parent must be taller than the sticky content
 - `items-stretch` on the grid makes both columns match the taller column's height
@@ -371,14 +391,16 @@ export function Navbar() {
 
   useEffect(() => {
     if (pathname !== "/") return;
-    const sectionIds = navLinks.map((l) => l.sectionId).filter(Boolean) as string[];
+    const sectionIds = navLinks
+      .map((l) => l.sectionId)
+      .filter(Boolean) as string[];
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) setActiveSection(entry.target.id);
         }
       },
-      { rootMargin: "-40% 0px -40% 0px" }
+      { rootMargin: "-40% 0px -40% 0px" },
     );
     for (const id of sectionIds) {
       const el = document.getElementById(id);
@@ -417,7 +439,10 @@ export function Navbar() {
 
         {/* Right side: CTA + mobile hamburger */}
         <div className="flex items-center gap-4">
-          <Link href="/pricing" className="rounded-lg bg-foreground px-4 py-1.5 font-medium text-background transition-opacity hover:opacity-80">
+          <Link
+            href="/pricing"
+            className="rounded-lg bg-foreground px-4 py-1.5 font-medium text-background transition-opacity hover:opacity-80"
+          >
             Get Started
           </Link>
           {/* Mobile toggle — md:hidden */}
@@ -433,9 +458,11 @@ export function Navbar() {
       </div>
 
       {/* Mobile dropdown */}
-      <div className={`overflow-hidden border-t border-border transition-[max-height] duration-300 ease-in-out md:hidden ${
-        mobileOpen ? "max-h-80" : "max-h-0 border-t-transparent"
-      }`}>
+      <div
+        className={`overflow-hidden border-t border-border transition-[max-height] duration-300 ease-in-out md:hidden ${
+          mobileOpen ? "max-h-80" : "max-h-0 border-t-transparent"
+        }`}
+      >
         <nav className="flex flex-col gap-1 px-6 py-4">
           {navLinks.map((link) => (
             <Link
@@ -455,6 +482,7 @@ export function Navbar() {
 ```
 
 **Key patterns:**
+
 - `rootMargin: "-40% 0px -40% 0px"` — only triggers when a section is in the middle 20% of the viewport
 - Active class is conditional: `text-foreground` vs `text-muted-foreground` (never both at once)
 - Mobile menu uses `max-h` transition for smooth expand/collapse
@@ -493,7 +521,7 @@ useEffect(() => {
         observer.disconnect();
       }
     },
-    { threshold: 0.3 }
+    { threshold: 0.3 },
   );
   observer.observe(el);
   return () => observer.disconnect();
@@ -516,15 +544,15 @@ Apply to elements with staggered delays:
 
 ## Design Tokens Reference
 
-| Element | Solid/Dashed | CSS |
-|---------|-------------|-----|
-| Vertical rails | Solid | `background: var(--border)` |
-| Section dividers | Solid | `background: var(--border)` |
-| Internal grid dividers | Dashed | `border-dashed border-border` |
-| Dot pattern | N/A | `radial-gradient` with 4% white opacity |
-| Card hover | N/A | `hover:bg-white/[0.02]` |
-| Section label | N/A | `text-xs font-medium uppercase tracking-wide` |
-| Scrollbar thumb | N/A | `rgba(255, 255, 255, 0.1)`, hover `0.2` |
+| Element                | Solid/Dashed | CSS                                           |
+| ---------------------- | ------------ | --------------------------------------------- |
+| Vertical rails         | Solid        | `background: var(--border)`                   |
+| Section dividers       | Solid        | `background: var(--border)`                   |
+| Internal grid dividers | Dashed       | `border-dashed border-border`                 |
+| Dot pattern            | N/A          | `radial-gradient` with 4% white opacity       |
+| Card hover             | N/A          | `hover:bg-white/[0.02]`                       |
+| Section label          | N/A          | `text-xs font-medium uppercase tracking-wide` |
+| Scrollbar thumb        | N/A          | `rgba(255, 255, 255, 0.1)`, hover `0.2`       |
 
 ---
 

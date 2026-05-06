@@ -5,8 +5,7 @@ import { cn } from "@/lib/utils";
 
 type SizeVariant = "sm" | "default" | "lg";
 
-interface CopyButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface CopyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   value?: string;
   size?: SizeVariant;
 }
@@ -23,7 +22,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
 
     const handleCopy = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (value) {
-        navigator.clipboard.writeText(value).catch(() => { });
+        navigator.clipboard.writeText(value).catch(() => {});
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
@@ -54,11 +53,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
               : "scale-70 opacity-0 blur-[2px]",
           )}
         >
-          <HugeiconsIcon
-            icon={Tick02Icon}
-            size={iconSize}
-            strokeWidth={2}
-          />
+          <HugeiconsIcon icon={Tick02Icon} size={iconSize} strokeWidth={2} />
         </div>
         <div
           className={cn(
@@ -68,11 +63,7 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
               : "scale-100 opacity-100 blur-none",
           )}
         >
-          <HugeiconsIcon
-            icon={Copy01Icon}
-            size={iconSize}
-            strokeWidth={2}
-          />
+          <HugeiconsIcon icon={Copy01Icon} size={iconSize} strokeWidth={2} />
         </div>
       </button>
     );

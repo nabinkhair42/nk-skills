@@ -30,21 +30,24 @@ The data needed to render the form is 90% available from the list view. Only sen
 Open the UI immediately using data already in memory (list cache, parent component props, URL params):
 
 ```tsx
-const handleEdit = useCallback(async (item: Item) => {
-  // INSTANT: Open form with data from the list
-  setEditingItem(item);
-  setFormOpen(true);
+const handleEdit = useCallback(
+  async (item: Item) => {
+    // INSTANT: Open form with data from the list
+    setEditingItem(item);
+    setFormOpen(true);
 
-  // BACKGROUND: Fetch full data (passwords, computed fields, etc.)
-  const fullItem = await queryClient.fetchQuery({
-    queryKey: QUERY_KEYS.ITEM(item.id),
-    queryFn: () => itemService.get(item.id),
-    staleTime: 2 * 60 * 1000, // Don't refetch if recently loaded
-  });
+    // BACKGROUND: Fetch full data (passwords, computed fields, etc.)
+    const fullItem = await queryClient.fetchQuery({
+      queryKey: QUERY_KEYS.ITEM(item.id),
+      queryFn: () => itemService.get(item.id),
+      staleTime: 2 * 60 * 1000, // Don't refetch if recently loaded
+    });
 
-  // Update form with complete data (missing fields fill in)
-  setEditingItem(fullItem);
-}, [queryClient]);
+    // Update form with complete data (missing fields fill in)
+    setEditingItem(fullItem);
+  },
+  [queryClient],
+);
 ```
 
 ### Layer 2: React Query Cache (staleTime)
@@ -73,11 +76,11 @@ onSuccess: (updatedItem) => {
     return {
       ...old,
       data: old.data.map((item) =>
-        item.id === updatedItem.id ? updatedItem : item
+        item.id === updatedItem.id ? updatedItem : item,
       ),
     };
   });
-}
+};
 ```
 
 **Do NOT combine `setQueriesData` with `invalidateQueries`** — the invalidation triggers a refetch that immediately overwrites your optimistic update.
@@ -95,7 +98,7 @@ setOpen(true);
 
 // 2. Fetch full data through React Query cache
 const full = await queryClient.fetchQuery({
-  queryKey: ['items', id],
+  queryKey: ["items", id],
   queryFn: () => api.get(id),
   staleTime: 2 * 60 * 1000,
 });
@@ -109,12 +112,12 @@ setItem(full);
 ```tsx
 onSuccess: (newItem) => {
   // Insert into list cache immediately — no refetch
-  queryClient.setQueriesData({ queryKey: ['items'] }, (old) => ({
+  queryClient.setQueriesData({ queryKey: ["items"] }, (old) => ({
     ...old,
     data: [newItem, ...old.data],
     pagination: { ...old.pagination, total: old.pagination.total + 1 },
   }));
-}
+};
 ```
 
 ### For Delete Flows (Optimistic Remove)
@@ -122,15 +125,18 @@ onSuccess: (newItem) => {
 ```tsx
 onSuccess: (_, deletedId) => {
   // Remove from individual cache
-  queryClient.removeQueries({ queryKey: ['items', deletedId] });
+  queryClient.removeQueries({ queryKey: ["items", deletedId] });
 
   // Remove from list cache immediately — no refetch
-  queryClient.setQueriesData({ queryKey: ['items'] }, (old) => ({
+  queryClient.setQueriesData({ queryKey: ["items"] }, (old) => ({
     ...old,
     data: old.data.filter((item) => item.id !== deletedId),
-    pagination: { ...old.pagination, total: Math.max(0, old.pagination.total - 1) },
+    pagination: {
+      ...old.pagination,
+      total: Math.max(0, old.pagination.total - 1),
+    },
   }));
-}
+};
 ```
 
 ### For Navigation Prefetch (Hover/Focus)
@@ -139,7 +145,7 @@ onSuccess: (_, deletedId) => {
 // Prefetch on hover — data ready by the time user clicks
 const handleMouseEnter = (id: string) => {
   queryClient.prefetchQuery({
-    queryKey: ['items', id],
+    queryKey: ["items", id],
     queryFn: () => api.get(id),
     staleTime: 60 * 1000,
   });
@@ -147,7 +153,7 @@ const handleMouseEnter = (id: string) => {
 
 <Link onMouseEnter={() => handleMouseEnter(item.id)} href={`/items/${item.id}`}>
   {item.name}
-</Link>
+</Link>;
 ```
 
 ---
@@ -165,8 +171,8 @@ Auth check (5s) → Page renders → Data fetch (3s) = 8s total
 ```tsx
 function Page() {
   // Both hooks fire on mount — run in parallel
-  const { isLoading: authLoading } = useAuth();        // 5s
-  const { data, isLoading: dataLoading } = useItems();  // 3s
+  const { isLoading: authLoading } = useAuth(); // 5s
+  const { data, isLoading: dataLoading } = useItems(); // 3s
   // Total: max(5s, 3s) = 5s instead of 8s
 
   if (authLoading || !isAuthenticated) return <Loader />;
@@ -198,13 +204,13 @@ function AuthProvider({ children }) {
 
 ## staleTime Strategy
 
-| Data Type | staleTime | Rationale |
-|-----------|-----------|-----------|
-| User session | Cookie cache (server) | Never fetched client-side with cookie cache |
-| Static config | 10-30 min | Rarely changes |
-| User's own data (connections, saved queries) | 2-5 min | Changes on user action, not externally |
-| Shared/collaborative data | 30s-1 min | Others may modify |
-| Real-time data (notifications, status) | 0-10s | Must stay current |
+| Data Type                                    | staleTime             | Rationale                                   |
+| -------------------------------------------- | --------------------- | ------------------------------------------- |
+| User session                                 | Cookie cache (server) | Never fetched client-side with cookie cache |
+| Static config                                | 10-30 min             | Rarely changes                              |
+| User's own data (connections, saved queries) | 2-5 min               | Changes on user action, not externally      |
+| Shared/collaborative data                    | 30s-1 min             | Others may modify                           |
+| Real-time data (notifications, status)       | 0-10s                 | Must stay current                           |
 
 ---
 
@@ -233,7 +239,7 @@ const data = await itemService.get(id);
 
 // GOOD: Through React Query — cached, deduplicated, retried
 const data = await queryClient.fetchQuery({
-  queryKey: ['items', id],
+  queryKey: ["items", id],
   queryFn: () => itemService.get(id),
   staleTime: 2 * 60 * 1000,
 });
@@ -248,10 +254,10 @@ setItem(full);
 setOpen(true);
 
 // GOOD: Open with what you have, fill in the rest
-setItem(partial);   // From list cache
-setOpen(true);      // Instant
+setItem(partial); // From list cache
+setOpen(true); // Instant
 const full = await fetchFullItem(id); // Background
-setItem(full);      // Password fills in
+setItem(full); // Password fills in
 ```
 
 ### 4. Conditional Hooks (Waterfall by Design)
