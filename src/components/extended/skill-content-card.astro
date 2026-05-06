@@ -12,7 +12,7 @@ const hasFrontmatter = Boolean(name ?? description);
 ---
 
 <div
-  class="relative w-full max-w-3xl rounded-lg border border-border bg-card pt-6 pr-4 pb-4 pl-6"
+  class="relative w-full rounded-lg border border-border bg-card pt-6 pr-4 pb-4 pl-6 overflow-hidden"
 >
   <div class="absolute top-3 right-3">
     <CopyButton value={copyContent} size="sm" client:load />
