@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { skills, type Skill } from "../data/skills";
+import { skills, type Skill } from "@/data/skills";
 
 const SITE_URL = "https://skills.nabinkhair.com.np";
 

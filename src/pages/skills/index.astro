@@ -1,10 +1,10 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import Breadcrumbs from "../../ui/breadcrumbs.astro";
-import { skills } from "../../data/skills";
-import { topics, topicBySlug } from "../../data/topics";
-import SkillCard from "../../ui/skill-card.astro";
-import TopicTag from "../../ui/topic-tag.astro";
+import Layout from "@/layouts/Layout.astro";
+import Breadcrumbs from "@/components/extended/breadcrumbs.astro";
+import { skills } from "@/data/skills";
+import { topics, topicBySlug } from "@/data/topics";
+import SkillCard from "@/components/extended/skill-card.astro";
+import TopicTag from "@/components/extended/topic-tag.astro";
 
 const breadcrumbItems = [{ label: "home", href: "/" }, { label: "skills" }];
 

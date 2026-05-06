@@ -1,8 +1,16 @@
 ---
-import { skills } from "../data/skills";
-import Layout from "../layouts/Layout.astro";
-import { InstallTabs } from "../ui/install-tabs";
-import SkillCard from "../ui/skill-card.astro";
+import { skills } from "@/data/skills";
+import Layout from "@/layouts/Layout.astro";
+import CodeBlock from "@/components/extended/code-block.astro";
+import SkillCard from "@/components/extended/skill-card.astro";
+
+const commandSegments = [
+  { text: "curl", className: "syntax-command" },
+  { text: " -fsSL", className: "syntax-flag" },
+  { text: " https://skills.nabinkhair.com.np/install", className: "syntax-string" },
+  { text: " |", className: "syntax-punctuation" },
+  { text: " bash", className: "syntax-command" },
+];
 ---
 
 <Layout
@@ -29,8 +37,13 @@ import SkillCard from "../ui/skill-card.astro";
           </p>
         </div>
 
-        <div class="px-4 sm:px-0">
-          <InstallTabs client:load />
+        <div>
+          <h2
+            class="font-heading text-foreground mb-3 px-4 text-lg font-medium tracking-tight sm:px-0"
+          >
+            install
+          </h2>
+          <CodeBlock lines={[commandSegments]} align="center" truncate />
         </div>
 
         <div>

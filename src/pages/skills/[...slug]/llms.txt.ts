@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { skills } from "../../../data/skills";
+import { skills } from "@/data/skills";
 
 const skillRawModules = import.meta.glob<string>("/skills/*/SKILL.md", {
   eager: true,

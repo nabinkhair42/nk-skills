@@ -10,6 +10,22 @@ type Props = {
 const { previousHref, nextHref } = Astro.props as Props;
 ---
 
+<script is:inline define:vars={{ previousHref, nextHref }}>
+  document.addEventListener("keydown", function (e) {
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      e.target.isContentEditable
+    ) return;
+    if (e.key === "ArrowLeft" && previousHref) {
+      window.location.href = previousHref;
+    }
+    if (e.key === "ArrowRight" && nextHref) {
+      window.location.href = nextHref;
+    }
+  });
+</script>
+
 <div
   class="border-border bg-card inline-flex items-stretch overflow-hidden rounded-md border"
 >

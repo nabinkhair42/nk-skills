@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { skills } from "../data/skills";
+import { skills } from "@/data/skills";
 
 export const GET: APIRoute = () => {
   const navigation = [

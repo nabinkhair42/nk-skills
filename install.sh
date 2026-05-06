@@ -67,12 +67,10 @@ REGISTRY_URL="${UI_SKILLS_REGISTRY_URL:-${SKILL_URL_BASE}/registry.txt}"
 TRACKING_URL="https://collector.onedollarstats.com/events"
 TRACKING_SOURCE="https://skills.nabinkhair.com.np/install"
 
-if [ "$1" = "--all" ]; then
-  SKILLS="$ALL_SKILLS"
-elif [ -n "$1" ]; then
+if [ -n "$1" ]; then
   SKILLS="$1"
 else
-  SKILLS="$DEFAULT_SKILL"
+  SKILLS="$ALL_SKILLS"
 fi
 
 if [ "$SKILLS" != "${SKILLS#* }" ]; then
@@ -342,33 +340,31 @@ for SKILL_SLUG in $SKILLS; do
     SKILL_INSTALLED=$((SKILL_INSTALLED + 1))
   fi
 
-  # Cursor (commands folder)
-  if [ -d "$HOME/.cursor" ]; then
-    CURSOR_COMMAND_DIR="$HOME/.cursor/commands"
-    mkdir -p "$CURSOR_COMMAND_DIR"
-    cp "$TMP_COMMAND" "$CURSOR_COMMAND_DIR/$INSTALL_NAME"
-    if [ "$COMPACT_OUTPUT" -eq 0 ]; then
-      print_success "Cursor command installed"
-    fi
-    OPTIONAL_INSTALLED=$((OPTIONAL_INSTALLED + 1))
-    SKILL_INSTALLED=$((SKILL_INSTALLED + 1))
+  # Cursor (user-level commands - always install for /slash command support)
+  CURSOR_COMMAND_DIR="$HOME/.cursor/commands"
+  mkdir -p "$CURSOR_COMMAND_DIR"
+  cp "$TMP_COMMAND" "$CURSOR_COMMAND_DIR/$INSTALL_NAME"
+  if [ "$COMPACT_OUTPUT" -eq 0 ]; then
+    print_success "Cursor /$(echo "$SKILL_SLUG" | tr '/' '-') command installed"
   fi
+  OPTIONAL_INSTALLED=$((OPTIONAL_INSTALLED + 1))
+  SKILL_INSTALLED=$((SKILL_INSTALLED + 1))
 
-  # Claude Code (commands folder)
-  if [ -d "$HOME/.claude" ] || [ -d "$HOME/.config/claude" ]; then
-    if [ -d "$HOME/.claude" ]; then
-      CLAUDE_COMMAND_DIR="$HOME/.claude/commands"
-    else
-      CLAUDE_COMMAND_DIR="$HOME/.config/claude/commands"
-    fi
-    mkdir -p "$CLAUDE_COMMAND_DIR"
-    cp "$TMP_COMMAND" "$CLAUDE_COMMAND_DIR/$INSTALL_NAME"
-    if [ "$COMPACT_OUTPUT" -eq 0 ]; then
-      print_success "Claude Code command installed"
-    fi
-    OPTIONAL_INSTALLED=$((OPTIONAL_INSTALLED + 1))
-    SKILL_INSTALLED=$((SKILL_INSTALLED + 1))
+  # Claude Code (user-level commands - always install for /slash command support)
+  if [ -d "$HOME/.claude" ]; then
+    CLAUDE_COMMAND_DIR="$HOME/.claude/commands"
+  elif [ -d "$HOME/.config/claude" ]; then
+    CLAUDE_COMMAND_DIR="$HOME/.config/claude/commands"
+  else
+    CLAUDE_COMMAND_DIR="$HOME/.claude/commands"
   fi
+  mkdir -p "$CLAUDE_COMMAND_DIR"
+  cp "$TMP_COMMAND" "$CLAUDE_COMMAND_DIR/$INSTALL_NAME"
+  if [ "$COMPACT_OUTPUT" -eq 0 ]; then
+    print_success "Claude Code /$(echo "$SKILL_SLUG" | tr '/' '-') command installed"
+  fi
+  OPTIONAL_INSTALLED=$((OPTIONAL_INSTALLED + 1))
+  SKILL_INSTALLED=$((SKILL_INSTALLED + 1))
 
   # Windsurf (append to global_rules.md)
   MARKER="# nk-skills"
@@ -430,5 +426,9 @@ if [ "$OPTIONAL_INSTALLED" -eq 0 ]; then
 fi
 
 print_header "Done"
-print_info "Usage: /structural-grid, /optimistic-cache-pattern, or /product-stack"
+printf "\n"
+print_info "slash commands available:"
+for S in $SKILLS; do
+  printf "  ${GREEN}/${S}${RESET}\n"
+done
 printf "\n"

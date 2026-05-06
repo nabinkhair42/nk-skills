@@ -1,0 +1,22 @@
+---
+import { Badge } from "@/components/ui/badge";
+
+interface Props {
+  href: string;
+  label: string;
+  count?: number;
+}
+
+const { href, label, count } = Astro.props;
+---
+
+<a href={href}>
+  <Badge variant="outline" className="gap-1.5 px-2 py-0.5">
+    <span>{label}</span>
+    {
+      typeof count === "number" ? (
+        <span class="tabular-nums text-muted-foreground">{count}</span>
+      ) : null
+    }
+  </Badge>
+</a>

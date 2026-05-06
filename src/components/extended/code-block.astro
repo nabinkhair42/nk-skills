@@ -29,7 +29,8 @@ const preClass = truncate
 
 <div
   id={id}
-  class={`relative flex justify-between rounded-lg border border-border bg-card py-3.5 pr-4 pl-6 ${alignClass} ${className}`}
+  data-copy-block={content}
+  class={`relative flex justify-between rounded-lg bg-muted py-2 pr-4 pl-6 cursor-copy ${alignClass} ${className}`}
 >
   <pre class={preClass}><code>{lines.map((line, lineIndex) => (
     <>
@@ -41,11 +42,20 @@ const preClass = truncate
   ))}</code></pre>
   <div class="flex items-center gap-1">
     <CopyButton
-      content={content}
-      showText={false}
-      className="size-8"
+      value={content}
+      size="sm"
       client:load
     />
   </div>
   <slot />
 </div>
+
+<script is:inline>
+  document.querySelectorAll("[data-copy-block]").forEach(function (block) {
+    block.addEventListener("click", function (e) {
+      if (e.target.closest("button")) return;
+      var btn = block.querySelector("button");
+      if (btn) btn.click();
+    });
+  });
+</script>
