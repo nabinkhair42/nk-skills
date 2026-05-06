@@ -1,7 +1,17 @@
 ---
 import "@/styles/global.css";
 import { ThemeToggle } from "@/components/extended/theme-toggle";
+import { SkillSearch } from "@/components/extended/skill-search";
 import { Button } from "@/components/ui/button";
+import { skills } from "@/data/skills";
+
+const searchItems = skills.map((s) => ({
+  slug: s.slug,
+  pathSlug: s.pathSlug,
+  label: s.label,
+  description: s.description,
+  topics: s.topics,
+}));
 
 type Props = {
   llmsPath?: string;
@@ -93,6 +103,7 @@ const ogTypeValue = ogType ?? "website";
           >
             skills
           </a>
+          <SkillSearch items={searchItems} client:load />
           <ThemeToggle client:load />
           <Button variant="ghost" size="icon-sm">
             <a
