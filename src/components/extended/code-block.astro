@@ -23,14 +23,14 @@ const content =
   lines.map((line) => line.map((segment) => segment.text).join("")).join("\n");
 const alignClass = align === "center" ? "items-center" : "items-start";
 const preClass = truncate
-  ? "m-0 min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap pr-3 font-mono text-[15px] leading-6"
+  ? "code-scroll m-0 min-w-0 flex-1 overflow-x-auto whitespace-nowrap pr-3 font-mono text-[15px] leading-6"
   : "m-0 font-mono text-[15px] leading-6";
 ---
 
 <div
   id={id}
   data-copy-block={content}
-  class={`relative flex justify-between rounded-lg bg-muted py-2 pr-4 pl-6 cursor-copy ${alignClass} ${className}`}
+  class={`relative mx-4 flex justify-between rounded-lg bg-muted py-2 pr-4 pl-4 cursor-copy sm:mx-0 sm:pl-6 ${alignClass} ${className}`}
 >
   <pre class={preClass}><code>{lines.map((line, lineIndex) => (
     <>
@@ -49,6 +49,25 @@ const preClass = truncate
   </div>
   <slot />
 </div>
+
+<style>
+  .code-scroll {
+    scrollbar-width: none;
+  }
+  .code-scroll:hover {
+    scrollbar-width: thin;
+  }
+  .code-scroll::-webkit-scrollbar {
+    height: 0;
+  }
+  .code-scroll:hover::-webkit-scrollbar {
+    height: 4px;
+  }
+  .code-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+</style>
 
 <script is:inline>
   document.querySelectorAll("[data-copy-block]").forEach(function (block) {
