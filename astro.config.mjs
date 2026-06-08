@@ -16,7 +16,6 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
-    assetsInclude: ["**/*.sh"],
     resolve: {
       dedupe: ["react", "react-dom"],
     },

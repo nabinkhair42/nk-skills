@@ -4,12 +4,11 @@ import Layout from "@/layouts/Layout.astro";
 import CodeBlock from "@/components/extended/code-block.astro";
 import SkillCard from "@/components/extended/skill-card.astro";
 
-const commandSegments = [
-  { text: "curl", className: "syntax-command" },
-  { text: " -fsSL", className: "syntax-flag" },
-  { text: " https://skills.nabinkhair.com.np/install", className: "syntax-string" },
-  { text: " |", className: "syntax-punctuation" },
-  { text: " bash", className: "syntax-command" },
+const installSegments = [
+  { text: "npx", className: "syntax-command" },
+  { text: " skills", className: "syntax-string" },
+  { text: " add", className: "syntax-flag" },
+  { text: " nabinkhair42/nk-skills", className: "syntax-string" },
 ];
 ---
 
@@ -43,7 +42,11 @@ const commandSegments = [
           >
             install
           </h2>
-          <CodeBlock lines={[commandSegments]} align="center" truncate />
+          <CodeBlock lines={[installSegments]} align="center" truncate />
+          <p class="text-muted-foreground mt-2 px-4 text-xs sm:px-0">
+            installs into your project for Claude Code, Cursor, Copilot, and 30+
+            agents via <span class="text-foreground">skills.sh</span>.
+          </p>
         </div>
 
         <div>
