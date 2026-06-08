@@ -1,6 +1,7 @@
 ---
 name: optimistic-cache-pattern
 description: Instant UI with background data resolution using React Query cache layers. Apply when building CRUD UIs, edit forms, detail views, or any flow where partial data is already available and full data needs fetching. Eliminates perceived latency by showing what you have immediately and resolving the rest in the background.
+topics: [react-patterns, performance]
 ---
 
 # Optimistic Cache Pattern (OCP)

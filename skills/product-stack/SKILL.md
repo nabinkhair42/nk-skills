@@ -1,6 +1,7 @@
 ---
 name: product-stack
 description: Full-stack Next.js architecture for product engineers. A strict 9-layer pattern covering database schemas (Drizzle), API routes, Axios services, React Query hooks, Zod validation, and shadcn/ui components. Every new feature follows the same flow so the codebase stays consistent as it scales.
+topics: [architecture, react-patterns, tooling]
 ---
 
 # Product Stack
