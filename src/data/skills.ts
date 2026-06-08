@@ -6,6 +6,7 @@ type SkillFrontmatter = {
   name?: string;
   description?: string;
   label?: string;
+  topics?: TopicSlug[];
 };
 
 export type Skill = {
@@ -45,7 +46,7 @@ export const skills: Skill[] = Object.entries(skillModules)
       name,
       label: module.frontmatter.label ?? titleize(name),
       description: module.frontmatter.description,
-      topics: localSkillTopics[slug] ?? [],
+      topics: module.frontmatter.topics ?? localSkillTopics[slug] ?? [],
     };
   })
   .sort((a, b) => a.pathSlug.localeCompare(b.pathSlug));

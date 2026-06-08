@@ -1,6 +1,6 @@
 import { CopyButton } from "./copy-button";
 
-const command = "curl -fsSL https://skills.nabinkhair.com.np/install | bash";
+const command = "npx skills add nabinkhair42/nk-skills";
 
 export function InstallTabs() {
   return (

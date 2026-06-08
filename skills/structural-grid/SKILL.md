@@ -1,6 +1,7 @@
 ---
 name: structural-grid
 description: A comprehensive design system for exposed grid/rail layouts used by Linear, Vercel, and Resend. Covers CSS foundation, section patterns, component recipes, and common pitfalls.
+topics: [design-systems, architecture]
 ---
 
 # Structural Grid Design System
