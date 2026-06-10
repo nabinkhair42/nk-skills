@@ -254,6 +254,10 @@ const commandSegments = skill
   title={pageTitle}
   description={pageDescription}
   robots={isInvalidSkillsRoute ? "noindex,follow" : undefined}
+  ogImage={skill
+    ? new URL(`/skills/${canonicalSkillPath}/og.png`, siteOrigin).toString()
+    : undefined}
+  ogImageAlt={skill ? `${skill.label} — agent skill by nabin khair` : undefined}
 >
   <div
     class="relative flex min-h-dvh flex-col items-center justify-start px-0 sm:px-4"
