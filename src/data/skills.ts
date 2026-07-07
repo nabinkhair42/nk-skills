@@ -22,6 +22,10 @@ const localSkillTopics: Record<string, TopicSlug[]> = {
   "structural-grid": ["design-systems", "architecture"],
   "optimistic-cache-pattern": ["react-patterns", "performance"],
   "product-stack": ["architecture", "react-patterns", "tooling"],
+  "data-table-pattern": ["react-patterns", "architecture"],
+  "product-ai-layer": ["ai", "architecture", "react-patterns"],
+  "command-palette": ["react-patterns", "design-systems"],
+  "feature-spec": ["ai", "architecture", "tooling"],
 };
 
 const skillModules = import.meta.glob<MarkdownInstance<SkillFrontmatter>>(

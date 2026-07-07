@@ -32,7 +32,10 @@ CLI.
 - **optimistic-cache-pattern** — React Query cache layering for instant UI
 - **product-stack** — full-stack Next.js architecture with layered CRUD patterns (Axios, React Query, Zod, shadcn/ui)
 - **form-stack** — type-safe forms with React Hook Form + Zod + shadcn/ui
-- **command-palette** — ⌘K command palette with cmdk + shadcn/ui
+- **data-table-pattern** — TanStack Table + shadcn/ui with URL-synced state and server-side operations
+- **product-ai-layer** — Vercel AI SDK integration (streaming chat, tools, rate limiting) for product-stack apps
+- **command-palette** — global Cmd+K palette with fuzzy search, frecency ranking, and server search
+- **feature-spec** — lightweight spec-driven development for agent-delegated feature implementation
 
 ## adding a skill
 
