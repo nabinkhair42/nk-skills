@@ -1,6 +1,7 @@
 ---
 name: product-ai-layer
 description: Embed AI features in Next.js product apps using Vercel AI SDK. Covers streaming chat, tool calling with Zod, rate limiting, and auth — integrated into the product-stack 9-layer architecture. Use when adding chat, copilots, AI search, or agent features to a SaaS product.
+topics: [ai, architecture, react-patterns]
 ---
 
 # Product AI Layer

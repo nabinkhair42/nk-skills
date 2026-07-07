@@ -1,6 +1,7 @@
 ---
 name: data-table-pattern
 description: Production data tables with TanStack Table v8, shadcn/ui, URL-synced state, and server-side operations. Use when building admin dashboards, list views, CRM tables, or any sortable/filterable/paginated data grid. Integrates with product-stack API shapes and React Query hooks.
+topics: [react-patterns, architecture]
 ---
 
 # Data Table Pattern

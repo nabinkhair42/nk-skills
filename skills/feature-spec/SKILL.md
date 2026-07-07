@@ -1,6 +1,7 @@
 ---
 name: feature-spec
 description: Lightweight spec-driven development for product engineers and AI agents. Write executable feature specs before code, map them to product-stack layers, and verify implementation against acceptance criteria. Use when planning features, delegating to agents, or ensuring consistent CRUD implementation.
+topics: [ai, architecture, tooling]
 ---
 
 # Feature Spec
