@@ -7,7 +7,7 @@ export const GET: APIRoute = () =>
   renderOgImage(
     Event({
       label: "agent skills",
-      brand: "skills.nk",
+      brand: "skills.nabinkhair.com.np",
       title: "reusable skills for product engineers",
       date: `${skills.length} skills`,
       location: "skills.nabinkhair.com.np",

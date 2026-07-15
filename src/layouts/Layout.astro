@@ -92,10 +92,10 @@ const ogTypeValue = ogType ?? "website";
     </script>
   </head>
   <body>
-    <div class="relative min-h-dvh">
+    <div class="relative flex min-h-dvh flex-col">
       <header class="flex items-center justify-between px-6 pt-6 sm:px-8">
         <a href="/" class="font-heading text-foreground text-sm font-medium">
-          skills.nk
+          skills.nabinkhair.com.np
         </a>
         <nav class="flex items-center gap-3 text-sm sm:gap-6">
           <a
@@ -128,14 +128,19 @@ const ogTypeValue = ogType ?? "website";
           </Button>
         </nav>
       </header>
-      <main id="main-content">
+      <main id="main-content" class="flex-1">
         <slot />
       </main>
       <footer
-        class="text-muted-foreground flex w-full items-center justify-center gap-3 px-4 pt-24 pb-6 text-center text-sm"
+        class="text-muted-foreground flex w-full shrink-0 items-center justify-center gap-3 px-4 pt-24 pb-6 text-center text-sm"
       >
         <span>
-          <span>&copy;{currentYear}</span>
+          <span
+            >&copy;
+            {" "}
+            {currentYear}</span
+          >
+          {" "}
           <a
             href="https://nabinkhair.com.np"
             target="_blank"
@@ -145,14 +150,9 @@ const ogTypeValue = ogType ?? "website";
             nabin khair
           </a>
         </span>
-        {llmsPath ? <span class="text-border">·</span> : null}
-        {
-          llmsPath ? (
-            <a href={llmsPath} class="hover:text-foreground">
-              llms.txt
-            </a>
-          ) : null
-        }
+        <a href={llmsPath ?? "/llms.txt"} class="hover:text-foreground">
+          llms.txt
+        </a>
       </footer>
     </div>
   </body>

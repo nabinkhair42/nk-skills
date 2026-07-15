@@ -12,10 +12,16 @@ const hasFrontmatter = Boolean(name ?? description);
 ---
 
 <div
-  class="relative mx-4 max-w-3xl overflow-hidden rounded-lg border border-border bg-card pt-6 pr-4 pb-4 pl-4 sm:mx-0 sm:w-full sm:pl-6"
+  class="skill-content-card relative mx-4 max-w-3xl overflow-hidden rounded-lg border border-border bg-card pt-6 pr-4 pb-4 pl-4 hover:cursor-copy sm:mx-0 sm:w-full sm:pl-6"
+  data-copy-content={copyContent}
 >
   <div class="absolute top-3 right-3">
-    <CopyButton value={copyContent} size="sm" client:load />
+    <CopyButton
+      value={copyContent}
+      size="sm"
+      className="skill-content-copy-trigger"
+      client:load
+    />
   </div>
   <div
     class="prose prose-neutral dark:prose-invert prose-headings:text-balance prose-headings:font-medium prose-headings:text-[15px] prose-h1:mt-0 prose-h1:mb-6 prose-h1:text-[18px] prose-h2:mt-8 prose-h2:mb-3 prose-p:my-3 prose-p:font-normal prose-p:text-[14px] prose-p:text-muted-foreground prose-p:text-pretty prose-ul:my-3 prose-li:my-1.5 prose-li:pl-0 prose-li:font-normal prose-li:text-[14px] prose-li:text-muted-foreground prose-li:marker:text-muted-foreground/50 prose-pre:rounded-lg prose-pre:p-4 prose-pre:text-[13px] max-w-none font-mono"
@@ -33,6 +39,29 @@ const hasFrontmatter = Boolean(name ?? description);
     <slot />
   </div>
 </div>
+
+<script>
+  const cards = document.querySelectorAll<HTMLElement>(".skill-content-card");
+
+  for (const card of cards) {
+    card.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("button, a, input, textarea, select")) return;
+
+      const copyButton = card.querySelector<HTMLButtonElement>(
+        ".skill-content-copy-trigger",
+      );
+
+      if (copyButton) {
+        copyButton.click();
+        return;
+      }
+
+      const content = card.dataset.copyContent;
+      if (content) navigator.clipboard.writeText(content).catch(() => {});
+    });
+  }
+</script>
 
 <style>
   .prose :where(a):not(:where([class~="not-prose"], [class~="not-prose"] *)) {

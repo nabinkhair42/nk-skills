@@ -32,7 +32,7 @@ export const GET: APIRoute = ({ params }) => {
           skill.description ?? "install this skill with a single command.",
         ),
       ),
-      brand: "skills.nk",
+      brand: "skills.nabinkhair.com.np",
     }),
   );
 };
