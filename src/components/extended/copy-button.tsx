@@ -1,6 +1,7 @@
 import * as React from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import { toast } from "@/components/ui/pill-toaster";
 import { cn } from "@/lib/utils";
 
 type SizeVariant = "sm" | "default" | "lg";
@@ -8,6 +9,7 @@ type SizeVariant = "sm" | "default" | "lg";
 interface CopyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   value?: string;
   size?: SizeVariant;
+  toastMessage?: string;
 }
 
 const sizeMap: Record<SizeVariant, { button: string; icon: number }> = {
@@ -17,15 +19,35 @@ const sizeMap: Record<SizeVariant, { button: string; icon: number }> = {
 };
 
 const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
-  ({ value, size = "default", className, onClick, ...props }, ref) => {
+  (
+    {
+      value,
+      size = "default",
+      toastMessage = "Copied",
+      className,
+      onClick,
+      ...props
+    },
+    ref,
+  ) => {
     const [copied, setCopied] = React.useState(false);
 
     const handleCopy = (event: React.MouseEvent<HTMLButtonElement>) => {
-      if (value) {
-        navigator.clipboard.writeText(value).catch(() => {});
+      if (!value) {
+        onClick?.(event);
+        return;
       }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+
+      void navigator.clipboard.writeText(value).then(
+        () => {
+          setCopied(true);
+          toast.success(toastMessage);
+          setTimeout(() => setCopied(false), 1500);
+        },
+        () => {
+          toast.error("Failed to copy");
+        },
+      );
       onClick?.(event);
     };
 

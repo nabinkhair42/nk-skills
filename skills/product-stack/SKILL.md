@@ -300,7 +300,7 @@ import { QUERY_KEYS } from "@/config/api-endpoints";
 import { projectService } from "@/services/project.service";
 import type { CreateProjectInput, UpdateProjectInput } from "@/schemas/project";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/pill-toaster";
 
 // READ - list (paginated)
 export function useProjects(page = 1, limit = 10, enabled = true) {
@@ -902,7 +902,7 @@ When you need to add a new resource (e.g. "tasks"), follow this exact order:
 - **TanStack React Query v5** - client-side server state management
 - **Axios** - HTTP client with interceptors (for client -> API route calls)
 - **Zod** - schema validation + type inference
-- **Sonner** - toast notifications
+- **Pill Toaster** - toast notifications (`pnpm dlx shadcn@latest add https://toast.nabinkhair.com.np/r/pill-toaster.json`; mount `<Toaster />` in the root provider)
 
 ---
 

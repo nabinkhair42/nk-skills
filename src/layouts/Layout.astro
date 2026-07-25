@@ -3,6 +3,7 @@ import "@/styles/global.css";
 import { ThemeToggle } from "@/components/extended/theme-toggle";
 import { SkillSearch } from "@/components/extended/skill-search";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/pill-toaster";
 import { skills } from "@/data/skills";
 
 const searchItems = skills.map((s) => ({
@@ -155,6 +156,7 @@ const ogTypeValue = ogType ?? "website";
         </a>
       </footer>
     </div>
+    <Toaster client:load/>
   </body>
 </html>
 

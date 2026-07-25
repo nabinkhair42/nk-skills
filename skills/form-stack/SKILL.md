@@ -559,4 +559,4 @@ const isSubmitting = mutation.isPending; // or form.formState.isSubmitting for a
 - **@hookform/resolvers** — `zodResolver` bridge
 - **shadcn/ui `Form`** — accessible `FormField`/`FormItem`/`FormControl`/`FormMessage` wiring
 - **TanStack React Query** — mutation submit path (or **Server Actions** for app-only forms)
-- **Sonner** — success/error toasts (in the hook, not the form)
+- **Pill Toaster** — success/error toasts (in the hook, not the form; `pnpm dlx shadcn@latest add https://toast.nabinkhair.com.np/r/pill-toaster.json`)
