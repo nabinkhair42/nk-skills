@@ -234,14 +234,12 @@ if (skill) {
 
 const commandSegments = skill
   ? [
-      { text: "curl", className: "syntax-command" },
-      { text: " -fsSL", className: "syntax-flag" },
-      {
-        text: ` https://skills.nabinkhair.com.np/skills/${skill.slug}/llms.txt`,
-        className: "syntax-string",
-      },
-      { text: " -o", className: "syntax-flag" },
-      { text: ` ${skill.slug}.md`, className: "syntax-string" },
+      { text: "npx", className: "syntax-command" },
+      { text: " skills", className: "syntax-string" },
+      { text: " add", className: "syntax-flag" },
+      { text: " nabinkhair42/nk-skills", className: "syntax-string" },
+      { text: " --skill", className: "syntax-flag" },
+      { text: ` ${skill.slug}`, className: "syntax-string" },
     ]
   : [];
 ---
