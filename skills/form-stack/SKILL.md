@@ -1,6 +1,6 @@
 ---
 name: form-stack
-description: Type-safe form architecture for Next.js product engineers. React Hook Form + Zod + shadcn/ui Form primitives, with one Zod schema driving validation, types, and the API contract. Apply when building any create/edit form, multi-step wizard, or form that submits via Server Action or React Query mutation. Covers field wiring, server-error mapping, field arrays, async validation, and the loading/disabled states most forms get wrong.
+description: Type-safe form architecture for Next.js product engineers. React Hook Form + Zod + shadcn/ui Form primitives, with one Zod schema driving validation, types, and the API contract. Apply when building any create/edit form, multi-step wizard, onboarding flow, or form that submits via Server Action or React Query mutation. Covers field wiring, server-error mapping, field arrays, async validation, form draft persistence, dirty checking, and the loading/disabled states most forms get wrong.
 topics: [react-patterns, architecture]
 ---
 
@@ -22,6 +22,7 @@ This skill pairs with [product-stack](/skills/product-stack) — reuse the exact
 4. **Server errors map back to fields** — a 409 "email taken" belongs on the email field via `setError`, not just a toast.
 5. **Submit is one async function** — disable the form while it runs, surface field/root errors on failure, reset or redirect on success.
 6. **The schema is the contract** — if the API rejects a payload the schema accepted, the schema is wrong. Fix it there, not with ad-hoc checks.
+7. **Drafts survive reload; dirty skips noise** — long create/onboarding forms persist to `localStorage` (keyed per user). Edit/settings forms disable Save until values diverge from the server snapshot.
 
 ---
 
@@ -479,7 +480,7 @@ useEffect(() => {
 **Rules:**
 
 - `form.reset(data)` is the correct way to load values async — not `setValue` per field.
-- Use `form.formState.isDirty` to disable "Save" until the user actually changed something.
+- Settings/edit forms use the dirty check below — disable Save until something changed.
 - Send only changed fields if your API supports `PATCH`: `form.formState.dirtyFields` tells you which.
 
 ---
@@ -507,7 +508,59 @@ async function next() {
 - Keep a single form instance; don't create one per step (you'd lose state between steps).
 - `form.trigger(fieldNames)` validates a subset on demand.
 - Only call `handleSubmit` on the final step.
-- Persist `form.getValues()` to `sessionStorage` if steps can be navigated away from.
+- Persist mid-fill with **form draft persistence** (below).
+
+---
+
+## Draft Persistence & Dirty Checking
+
+Two patterns, both wired for onboarding and reusable elsewhere. Full `lib/form-draft.ts` + `useFormDraft` live in [reference.md](reference.md).
+
+### 1. Form draft persistence
+
+Values live in `localStorage` (`useFormDraft` + `lib/form-draft.ts`), keyed **per user**. Reload mid-fill restores fields (name/slug/logo/domain, etc.).
+
+```tsx
+const key = `app.form.draft.onboarding.workspace:${userId}`;
+const draft = useFormDraft(key, EMPTY_WORKSPACE);
+
+async function onSubmit() {
+  await create.mutateAsync(normalize(draft.values));
+  draft.clear(); // or clearFormDraft(key)
+}
+```
+
+**Rules:**
+
+- Key includes `user.id` — drafts must not leak across accounts on a shared browser.
+- Don't persist pristine empties — the hook clears storage when values equal defaults.
+- Clear on success and when the resource already exists.
+- Never draft dialogs, passwords, or payment fields.
+- `localStorage` may throw (private mode); treat that as "no draft".
+- With RHF: `form.reset(draft.values)` on mount, `form.watch` → `draft.setValues` / `patch`.
+
+### 2. Dirty checking
+
+Settings/edit forms compare the current (normalized) values to the server snapshot and disable Save when unchanged. Reuse `isFormDirty` from the same lib — don't hand-roll field-by-field `!==` chains.
+
+```tsx
+const dirty = isFormDirty(
+  { name: name.trim(), slug: slug.trim(), logo: logo.trim() },
+  { name: org.name ?? "", slug: org.slug ?? "", logo: org.logo ?? "" },
+);
+
+<Button type="submit" disabled={!dirty || update.isPending}>
+  Save changes
+</Button>
+```
+
+With RHF after `reset(serverData)`, `form.formState.isDirty` is enough.
+
+**Rules:**
+
+- Always compare **normalized** values (trim, derived slug) — not raw input strings.
+- Dirty gates the button; it does not replace server validation.
+- Prefer `isFormDirty` (stable JSON) over long boolean OR chains when the shape has more than a couple fields.
 
 ---
 
@@ -530,8 +583,8 @@ const isSubmitting = mutation.isPending; // or form.formState.isSubmitting for a
 **Rules:**
 
 - Wrap fields in a `<fieldset disabled={isSubmitting}>` to disable the whole form in one place.
-- Disable submit while pending **and** (for edit forms) when `!isDirty`.
-- Don't unmount the form on success if you show inline confirmation — `form.reset()` instead.
+- Disable submit while pending **and** (for edit/settings) when not dirty.
+- Don't unmount the form on success if you show inline confirmation — `form.reset()` instead (and `draft.clear()` when using drafts).
 
 ---
 
@@ -546,9 +599,13 @@ const isSubmitting = mutation.isPending; // or form.formState.isSubmitting for a
 7. **Validating on `onChange` from the start** — Aggressive validation before the user finishes typing feels hostile. Default to `onBlur` + `reValidateMode: onChange`.
 8. **`setValue` to load edit data field-by-field** — Use `form.reset(data)`.
 9. **Reading `errors.field?.message` manually** — `<FormMessage />` already does this with correct `aria` wiring.
-10. **Lifting field values into `useState`** — Let RHF own form state. Only `watch` what you need to react to.
+10. **Lifting field values into `useState`** — Let RHF own form state. Only `watch` what you need to react to. Exception: `useFormDraft` owns persistence for long create/onboarding flows.
 11. **Forgetting `type="button"`** — Any non-submit button inside a `<form>` (add/remove row, next step) must be `type="button"` or it submits the form.
 12. **Not disabling submit while pending** — Double-submits create duplicate records. Disable on `isPending`.
+13. **Draft key missing `user.id`** — Shared-machine leak.
+14. **Comparing raw vs normalized on dirty check** — Trim/slugify before `isFormDirty`.
+15. **Leaving drafts after success** — Clear when the resource exists or the flow finishes.
+16. **Drafting dialogs / secrets** — Drafts are for long full-page forms only.
 
 ---
 
@@ -559,4 +616,5 @@ const isSubmitting = mutation.isPending; // or form.formState.isSubmitting for a
 - **@hookform/resolvers** — `zodResolver` bridge
 - **shadcn/ui `Form`** — accessible `FormField`/`FormItem`/`FormControl`/`FormMessage` wiring
 - **TanStack React Query** — mutation submit path (or **Server Actions** for app-only forms)
+- **`useFormDraft` + `lib/form-draft.ts`** — localStorage drafts + `isFormDirty` (see [reference.md](reference.md))
 - **Pill Toaster** — success/error toasts (in the hook, not the form; `pnpm dlx shadcn@latest add https://toast.nabinkhair.com.np/r/pill-toaster.json`)
