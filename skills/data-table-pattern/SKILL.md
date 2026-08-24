@@ -251,23 +251,33 @@ Extend route handlers to accept table query params:
 ```typescript
 // app/api/projects/route.ts — GET additions
 
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
+
 const sort = searchParams.get("sort") ?? "createdAt";
 const order = searchParams.get("order") ?? "desc";
 const status = searchParams.get("status")?.split(",").filter(Boolean) ?? [];
 
-const sortColumn = projects[sort as keyof typeof projects] ?? projects.createdAt;
+// Whitelist sortable columns — never pass raw query params as column refs
+const SORTABLE_COLUMNS = {
+  name: projects.name,
+  status: projects.status,
+  createdAt: projects.createdAt,
+} as const;
+const sortColumn =
+  SORTABLE_COLUMNS[sort as keyof typeof SORTABLE_COLUMNS] ?? projects.createdAt;
 const orderFn = order === "asc" ? asc : desc;
 
-let query = db
-  .select()
-  .from(projects)
-  .where(eq(projects.userId, user.id));
-
+// Collect all conditions first, apply with ONE .where() call.
+// Drizzle throws if you chain .where() twice on the same query builder.
+const conditions = [eq(projects.userId, user.id)];
 if (status.length) {
-  query = query.where(inArray(projects.status, status));
+  conditions.push(inArray(projects.status, status));
 }
 
-const rows = await query
+const rows = await db
+  .select()
+  .from(projects)
+  .where(and(...conditions))
   .orderBy(orderFn(sortColumn))
   .limit(limit)
   .offset(offset);
@@ -405,3 +415,5 @@ onSuccess: (_, deletedIds: string[]) => {
 5. **No loading skeleton** — show skeleton rows matching column layout, not a spinner
 6. **Bulk delete without cache update** — triggers unnecessary refetch; use `setQueriesData`
 7. **4-column grid on mobile** — wrap in `overflow-x-auto` with `min-w-[600px]` inner container
+8. **Chaining `.where()` twice** — Drizzle throws at runtime. Collect conditions in an array and apply once with `and(...conditions)`
+9. **Unwhitelisted sort columns** — `projects[sort as keyof typeof projects]` lets clients sort by any column (including ones they shouldn't see). Map query params through an explicit `SORTABLE_COLUMNS` whitelist

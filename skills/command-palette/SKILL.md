@@ -204,6 +204,7 @@ For results that come from the server (search projects, users, docs), debounce t
 import { useEffect, useState } from "react";
 
 export function CommandMenu() {
+  // `runCommand` is the close-after-action helper from "Running Actions" above
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -281,7 +282,7 @@ export function CommandMenu() {
 - `shouldFilter={false}` when results are server-filtered — otherwise cmdk re-filters and hides matches.
 - Use `CommandInput`'s controlled `value`/`onValueChange` to capture the query.
 - Always render a distinct **loading** vs **empty** vs **no-query** state.
-- For cleaner data fetching, wrap the fetch in a React Query `useQuery` keyed on the debounced query instead of manual state (see [optimistic-cache-pattern](/skills/optimistic-cache-pattern)).
+- For cleaner data fetching, wrap the fetch in a React Query `useQuery` keyed on the debounced query instead of manual state (see `optimistic-cache-pattern`).
 
 ---
 

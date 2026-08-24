@@ -1,12 +1,29 @@
 ---
 name: structural-grid
-description: A comprehensive design system for exposed grid/rail layouts used by Linear, Vercel, and Resend. Covers CSS foundation, section patterns, component recipes, and common pitfalls.
+description: A comprehensive design system for exposed grid/rail layouts used by Linear, Vercel, and Resend. Covers CSS foundation, section patterns, component recipes, and common pitfalls. Use when building a landing page, marketing site, pricing page, or any SaaS page with visible rail lines, section dividers, or a Linear/Vercel/Resend-style aesthetic. Dark-first; includes light-theme adaptation notes.
 topics: [design-systems, architecture]
 ---
 
 # Structural Grid Design System
 
 You are implementing a **Structural Grid** (also called "Exposed Grid" or "Rail Layout") design pattern. This is the modern SaaS design pattern used by Linear, Vercel, Resend, Profound, and Planetscale — where the underlying page grid is promoted to a first-class visual element.
+
+> **Dark-first.** The recipes below hardcode white overlays (`bg-white/[0.02]`, `border-white/[0.08]`, white dot patterns, light scrollbar). They assume a dark background. For light themes, see [Light Theme Adaptation](#light-theme-adaptation) before applying.
+
+## Light Theme Adaptation
+
+Swap every white overlay for a foreground-based equivalent so the pattern works on both themes:
+
+| Dark recipe                  | Theme-agnostic replacement                        |
+| ---------------------------- | -------------------------------------------------- |
+| `hover:bg-white/[0.02]`      | `hover:bg-foreground/[0.03]`                       |
+| `border-white/[0.08]`        | `border-border` (or `border-foreground/10`)        |
+| `bg-white/[0.04]` (badge)    | `bg-muted`                                         |
+| `text-white/60`              | `text-muted-foreground`                            |
+| Dot pattern `rgba(255,255,255,0.04)` | `rgba(128,128,128,0.12)` or theme-aware CSS variable |
+| Scrollbar `rgba(255,255,255,0.1)`    | `color-mix(in oklab, var(--foreground) 15%, transparent)` |
+
+Prefer the semantic tokens (`border`, `muted`, `muted-foreground`) whenever the target app defines them — then the grid inherits theme switches for free.
 
 ## Core Principles
 
@@ -488,7 +505,7 @@ export function Navbar() {
 - Active class is conditional: `text-foreground` vs `text-muted-foreground` (never both at once)
 - Mobile menu uses `max-h` transition for smooth expand/collapse
 - Auto-closes on link click via `onClick`
-- Lock body scroll when mobile menu is open with `document.body.style.overflow`
+- If the menu can grow tall, lock body scroll while open: set `document.body.style.overflow = "hidden"` in the open effect and restore `= ""` on cleanup (not shown above)
 
 ### Responsive Tables
 

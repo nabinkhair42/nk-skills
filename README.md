@@ -33,9 +33,12 @@ CLI.
 - **product-stack** — full-stack Next.js architecture with layered CRUD patterns (Axios, React Query, Zod, shadcn/ui)
 - **form-stack** — type-safe forms with React Hook Form + Zod + shadcn/ui
 - **data-table-pattern** — TanStack Table + shadcn/ui with URL-synced state and server-side operations
-- **product-ai-layer** — Vercel AI SDK integration (streaming chat, tools, rate limiting) for product-stack apps
+- **product-ai-layer** — Vercel AI SDK v5+ integration (streaming chat, tools, rate limiting) for product-stack apps
 - **command-palette** — global Cmd+K palette with fuzzy search, frecency ranking, and server search
 - **feature-spec** — lightweight spec-driven development for agent-delegated feature implementation
+- **auth-stack** — Better Auth / Clerk authentication wired into the product-stack `protectedApi` boundary
+- **testing-stack** — Vitest four-layer testing pyramid for product-stack apps
+- **nextjs-api-performance** — measured API performance optimization (auth caching, query plans, durable background work)
 
 ## adding a skill
 

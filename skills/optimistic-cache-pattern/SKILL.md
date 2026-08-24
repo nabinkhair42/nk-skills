@@ -71,12 +71,12 @@ onSuccess: (updatedItem) => {
   // Update individual item cache
   queryClient.setQueryData(QUERY_KEYS.ITEM(updatedItem.id), updatedItem);
 
-  // Update list cache (no refetch needed)
+  // Update list caches (no refetch needed)
   queryClient.setQueriesData({ queryKey: QUERY_KEYS.ITEMS }, (old) => {
     if (!old) return old;
     return {
       ...old,
-      data: old.data.map((item) =>
+      items: old.items.map((item) =>
         item.id === updatedItem.id ? updatedItem : item,
       ),
     };
@@ -84,7 +84,11 @@ onSuccess: (updatedItem) => {
 };
 ```
 
-**Do NOT combine `setQueriesData` with `invalidateQueries`** — the invalidation triggers a refetch that immediately overwrites your optimistic update.
+**Do NOT combine `setQueriesData` with `invalidateQueries` for the same mutation** — the invalidation triggers a refetch that immediately overwrites your optimistic update.
+
+**Choosing a strategy per resource:** `product-stack`'s default hooks use `invalidateQueries`. That is fine — but it's an either/or *per mutation*. When you adopt this pattern for a resource, replace that resource's invalidations with cache-set logic entirely. Never mix both in one `onSuccess`.
+
+**List shape:** these examples assume the `PaginatedData<T>` contract from `product-stack`: `{ items: T[], meta: { page, limit, total, totalPages, hasNext, hasPrev } }`.
 
 ---
 
@@ -112,12 +116,15 @@ setItem(full);
 
 ```tsx
 onSuccess: (newItem) => {
-  // Insert into list cache immediately — no refetch
-  queryClient.setQueriesData({ queryKey: ["items"] }, (old) => ({
-    ...old,
-    data: [newItem, ...old.data],
-    pagination: { ...old.pagination, total: old.pagination.total + 1 },
-  }));
+  // Insert into list caches immediately — no refetch
+  queryClient.setQueriesData({ queryKey: QUERY_KEYS.ITEMS }, (old) => {
+    if (!old) return old;
+    return {
+      ...old,
+      items: [newItem, ...old.items],
+      meta: { ...old.meta, total: old.meta.total + 1 },
+    };
+  });
 };
 ```
 
@@ -125,18 +132,18 @@ onSuccess: (newItem) => {
 
 ```tsx
 onSuccess: (_, deletedId) => {
-  // Remove from individual cache
-  queryClient.removeQueries({ queryKey: ["items", deletedId] });
+  // Remove the individual cache entry
+  queryClient.removeQueries({ queryKey: QUERY_KEYS.ITEM(deletedId) });
 
-  // Remove from list cache immediately — no refetch
-  queryClient.setQueriesData({ queryKey: ["items"] }, (old) => ({
-    ...old,
-    data: old.data.filter((item) => item.id !== deletedId),
-    pagination: {
-      ...old.pagination,
-      total: Math.max(0, old.pagination.total - 1),
-    },
-  }));
+  // Remove from list caches immediately — no refetch
+  queryClient.setQueriesData({ queryKey: QUERY_KEYS.ITEMS }, (old) => {
+    if (!old) return old;
+    return {
+      ...old,
+      items: old.items.filter((item) => item.id !== deletedId),
+      meta: { ...old.meta, total: Math.max(0, old.meta.total - 1) },
+    };
+  });
 };
 ```
 

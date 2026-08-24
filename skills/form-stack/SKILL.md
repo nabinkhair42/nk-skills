@@ -10,7 +10,7 @@ A single, repeatable pattern for every form in a product app. Built on **React H
 
 The core idea: **the Zod schema is the single source of truth.** It validates the form, infers the TypeScript types, and matches the API contract. You never write a form type by hand.
 
-This skill pairs with [product-stack](/skills/product-stack) — reuse the exact `createXSchema` you defined in `schemas/` to drive the form, and submit through the same React Query hooks.
+This skill pairs with `product-stack` — reuse the exact `createXSchema` you defined in `schemas/` to drive the form, and submit through the same React Query hooks.
 
 ---
 
@@ -39,7 +39,7 @@ shadcn's `form` component gives you `Form`, `FormField`, `FormItem`, `FormLabel`
 
 ## The Schema (source of truth)
 
-Reuse the resource schema from `schemas/` (see [product-stack](/skills/product-stack) Layer 3). The same schema validates the form and the API route.
+Reuse the resource schema from `schemas/` (see `product-stack` Layer 3). The same schema validates the form and the API route.
 
 ```typescript
 // schemas/project.ts
@@ -161,7 +161,7 @@ useForm({
 
 ## Submitting
 
-Two valid paths. Pick by who consumes the mutation (same rule as [product-stack](/skills/product-stack)).
+Two valid paths. Pick by who consumes the mutation (same rule as `product-stack`).
 
 ### Path A — React Query mutation (client form → API route)
 
@@ -461,7 +461,7 @@ useEffect(() => {
 
 ## Edit Forms (pre-filled data)
 
-For edit forms, seed `defaultValues` from fetched data and reset when it loads. Pairs naturally with [optimistic-cache-pattern](/skills/optimistic-cache-pattern) — open with cached values, `reset()` when full data resolves.
+For edit forms, seed `defaultValues` from fetched data and reset when it loads. Pairs naturally with `optimistic-cache-pattern` — open with cached values, `reset()` when full data resolves.
 
 ```tsx
 const { data: project } = useProject(id);

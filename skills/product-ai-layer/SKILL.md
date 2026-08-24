@@ -1,6 +1,6 @@
 ---
 name: product-ai-layer
-description: Embed AI features in Next.js product apps using Vercel AI SDK. Covers streaming chat, tool calling with Zod, rate limiting, and auth — integrated into the product-stack 9-layer architecture. Use when adding chat, copilots, AI search, or agent features to a SaaS product.
+description: Embed AI features in Next.js product apps using Vercel AI SDK (v5+). Covers streaming chat, tool calling with Zod, rate limiting, and auth — integrated into the product-stack 9-layer architecture. Use when adding chat, chatbots, copilots, AI search, or agent features to a SaaS product, or when working with useChat, streamText, generateObject, or AI tools.
 topics: [ai, architecture, react-patterns]
 ---
 
@@ -72,7 +72,14 @@ export const QUERY_KEYS = {
 ```typescript
 // app/api/ai/chat/route.ts
 
-import { streamText, convertToModelMessages, UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStreamResponse,
+  isStepCount,
+  streamText,
+  toUIMessageStream,
+  type UIMessage,
+} from "ai";
 import { openai } from "@ai-sdk/openai";
 import { protectedApi } from "@/lib/middleware/api-middleware";
 import { productTools } from "@/lib/ai/tools";
@@ -90,20 +97,23 @@ export const POST = protectedApi(async (request, user) => {
 
   const result = streamText({
     model: openai("gpt-4o"),
-    system: getSystemPrompt("product-assistant"),
+    instructions: getSystemPrompt("product-assistant"), // `system` in AI SDK ≤ v5
     messages: await convertToModelMessages(messages),
     tools: productTools(user.id),
-    maxSteps: 5,
+    stopWhen: isStepCount(5),
   });
 
-  return result.toUIMessageStreamResponse();
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
 });
 ```
 
 **Rules:**
 
-- `maxSteps` prevents infinite tool loops (default 5 is safe for product features)
+- `stopWhen: isStepCount(5)` bounds tool loops (`maxSteps` was removed in AI SDK v5)
 - `convertToModelMessages` handles the `UIMessage` → model message conversion
+- Return with `createUIMessageStreamResponse({ stream: toUIMessageStream({ ... }) })`
 - Rate limit before model call, not after
 - Pass `user.id` into tools for row-level security
 
@@ -126,7 +136,7 @@ export function productTools(userId: string) {
   return {
     listProjects: tool({
       description: "List the user's projects. Use when the user asks about their projects.",
-      parameters: z.object({
+      inputSchema: z.object({
         status: z.enum(["active", "draft", "archived"]).optional(),
       }),
       execute: async ({ status }) => {
@@ -141,7 +151,7 @@ export function productTools(userId: string) {
 
     createProject: tool({
       description: "Create a new project for the user.",
-      parameters: z.object({
+      inputSchema: z.object({
         name: z.string().min(1).max(100),
         description: z.string().max(500).optional(),
       }),
@@ -162,6 +172,7 @@ export function productTools(userId: string) {
 - Every tool `execute` scopes queries to `userId` — never trust the model for auth
 - Return minimal data (no passwords, tokens, internal IDs the user shouldn't see)
 - Tool descriptions are prompts — write them for the model, not humans
+- Tool inputs use `inputSchema` (renamed from `parameters` in AI SDK v5)
 - Reuse Zod schemas from `schemas/` where possible
 
 ---
@@ -198,12 +209,15 @@ For simpler setups without Redis, use an in-memory Map with TTL (dev only — no
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { API_ENDPOINTS } from "@/config/api-endpoints";
 import type { UIMessage } from "ai";
 
 export function useAiChat(initialMessages?: UIMessage[]) {
   return useChat({
-    api: API_ENDPOINTS.AI.CHAT,
+    transport: new DefaultChatTransport({
+      api: API_ENDPOINTS.AI.CHAT,
+    }),
     initialMessages,
     onError: (error) => {
       console.error("AI chat error:", error);
@@ -212,11 +226,13 @@ export function useAiChat(initialMessages?: UIMessage[]) {
 }
 ```
 
+**Rules:** `useChat` (AI SDK v5+) does not manage input text — own the `input` state in your component and call `sendMessage({ text })`. Use `status` (`"ready" | "submitted" | "streaming" | "error"`), not `isLoading`.
+
 ---
 
 ## Layer 6: Chat UI Components
 
-Render `message.parts` — not `message.content`. Parts support text, tool calls, and tool results simultaneously.
+Render `message.parts` — not `message.content`. Tool calls arrive as **typed tool parts** (`tool-{toolName}`) with states: `input-streaming`, `input-available`, `output-available`, `output-error`. Unknown/runtime tools use the generic `dynamic-tool` part.
 
 ```tsx
 // components/ai/chat-message.tsx
@@ -239,16 +255,13 @@ export function ChatMessage({ message }: { message: UIMessage }) {
           switch (part.type) {
             case "text":
               return <p key={i} className="whitespace-pre-wrap">{part.text}</p>;
-            case "tool-invocation":
-              return (
-                <ToolResult
-                  key={i}
-                  toolName={part.toolInvocation.toolName}
-                  state={part.toolInvocation.state}
-                  result={part.toolInvocation.result}
-                />
-              );
+            case "step-start":
+              return i > 0 ? <hr key={i} className="my-2 border-border" /> : null;
             default:
+              // Typed tool parts have a `tool-${name}` type; generic fallback:
+              if (part.type.startsWith("tool-") || part.type === "dynamic-tool") {
+                return <ToolResult key={i} part={part} />;
+              }
               return null;
           }
         })}
@@ -259,17 +272,41 @@ export function ChatMessage({ message }: { message: UIMessage }) {
 ```
 
 ```tsx
+// components/ai/tool-result.tsx — minimal renderer for server-executed tools
+
+"use client";
+
+export function ToolResult({ part }: { part: Extract<UIMessage["parts"][number], { toolCallId: string }> }) {
+  switch (part.state) {
+    case "input-streaming":
+    case "input-available":
+      return <p className="text-xs text-muted-foreground">Working...</p>;
+    case "output-available":
+      return <pre className="text-xs">{JSON.stringify(part.output, null, 2)}</pre>;
+    case "output-error":
+      return <p className="text-xs text-destructive">Tool failed</p>;
+    default:
+      return null;
+  }
+}
+```
+
+```tsx
 // components/ai/chat-panel.tsx
 
 "use client";
 
+import { useState } from "react";
 import { useAiChat } from "@/hooks/use-ai-chat";
 import { ChatMessage } from "./chat-message";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 export function ChatPanel() {
-  const { messages, input, setInput, handleSubmit, isLoading, stop } = useAiChat();
+  const { messages, sendMessage, status, stop, error } = useAiChat();
+  const [input, setInput] = useState("");
+
+  const isStreaming = status === "submitted" || status === "streaming";
 
   return (
     <div className="flex h-full flex-col">
@@ -277,28 +314,44 @@ export function ChatPanel() {
         {messages.map((message) => (
           <ChatMessage key={message.id} message={message} />
         ))}
+        {error && (
+          <p className="text-sm text-destructive">Something went wrong.</p>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t p-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!input.trim() || status !== "ready") return;
+          sendMessage({ text: input });
+          setInput("");
+        }}
+        className="border-t p-4"
+      >
         <div className="flex gap-2">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything..."
             rows={2}
+            disabled={status !== "ready"}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e);
+                if (!input.trim() || status !== "ready") return;
+                sendMessage({ text: input });
+                setInput("");
               }
             }}
           />
-          {isLoading ? (
-            <Button type="button" variant="outline" onClick={stop}>
+          {isStreaming ? (
+            <Button type="button" variant="outline" onClick={() => stop()}>
               Stop
             </Button>
           ) : (
-            <Button type="submit">Send</Button>
+            <Button type="submit" disabled={!input.trim()}>
+              Send
+            </Button>
           )}
         </div>
       </form>
@@ -405,8 +458,10 @@ For streaming chat, always use API routes. `useChat` expects an HTTP streaming e
 
 1. **Unauthenticated AI routes** — always wrap with `protectedApi`
 2. **Tools without user scoping** — model can request any ID; scope in `execute`
-3. **Rendering `message.content`** — use `message.parts` for tool call support
-4. **No `maxSteps`** — tool loops run forever without a step limit
+3. **Rendering `message.content`** — use `message.parts`; tool calls arrive as typed `tool-{name}` parts
+4. **Using removed v4 APIs** — `maxSteps` → `stopWhen: isStepCount(n)`, tool `parameters` → `inputSchema`, hook `input`/`handleSubmit` → own input state + `sendMessage({ text })`, `isLoading` → `status`
 5. **Rate limiting after the model call** — limit before `streamText`/`generateObject`
 6. **Huge tool results** — truncate lists; return summaries for large datasets
 7. **Storing API keys client-side** — model calls happen server-side only
+8. **Unbounded user text into prompts** — cap input length (validate `text` with Zod before `generateObject`) and treat it as data, never instructions; never feed tool results back into a prompt without truncation
+9. **Leaking internal errors** — return generic messages via `Errors.internal()`; log details server-side only

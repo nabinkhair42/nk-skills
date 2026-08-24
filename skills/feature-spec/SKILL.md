@@ -10,7 +10,7 @@ Spec-driven development without enterprise ceremony. Write a **feature spec** be
 
 The spec is the source of truth. Code is derived from it.
 
-Pairs with `product-stack` (9-layer checklist) and `agent-verification` patterns.
+Pairs with `product-stack` (9-layer checklist). Verification happens against the spec's acceptance criteria plus the layers checklist — no separate verification skill needed.
 
 ---
 
@@ -129,7 +129,7 @@ Agent follows the layers checklist in order. Each layer is a separate step — n
 
 ### Phase 4: Verify
 
-Check every acceptance criterion. Check every layer exists. Run the agent-verification checklist:
+Check every acceptance criterion. Check every layer exists. Run this verification checklist:
 
 - [ ] No hardcoded `/api/` strings in services or components
 - [ ] Components call hooks, not services
