@@ -41,11 +41,11 @@ const CopyButton = React.forwardRef<HTMLButtonElement, CopyButtonProps>(
       void navigator.clipboard.writeText(value).then(
         () => {
           setCopied(true);
-          toast.success(toastMessage);
+          toast({ message: toastMessage, state: "success" });
           setTimeout(() => setCopied(false), 1500);
         },
         () => {
-          toast.error("Failed to copy");
+          toast({ message: "Failed to copy", state: "error" });
         },
       );
       onClick?.(event);
