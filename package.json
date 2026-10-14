@@ -1,6 +1,7 @@
 {
   "name": "nk-skills",
   "type": "module",
+  "packageManager": "pnpm@12.11.2",
   "version": "0.1.5",
   "license": "MIT",
   "scripts": {

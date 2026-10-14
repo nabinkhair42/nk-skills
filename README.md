@@ -39,6 +39,7 @@ CLI.
 - **auth-stack** — Better Auth / Clerk authentication wired into the product-stack `protectedApi` boundary
 - **testing-stack** — Vitest four-layer testing pyramid for product-stack apps
 - **nextjs-api-performance** — measured API performance optimization (auth caching, query plans, durable background work)
+- **project-blueprint** — repo shape, package boundaries, Drizzle schema conventions, backend boundaries, env and tooling for new projects
 
 ## adding a skill
 
